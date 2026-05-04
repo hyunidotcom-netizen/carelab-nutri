@@ -1,0 +1,2718 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CareLab — Life Style Check</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --cream:#f5f1ea; --cream2:#ebe4d7; --ink:#2a2a2a; --ink2:#4a4a4a;
+  --olive:#5a6b3f; --olive-d:#3e4a2b;
+  --terra:#c8825a; --blue:#7aa8c8;
+  --paper:#fdfbf6; --line:#d4cfc3; --mute:#8a8a8a;
+  --red:#c0392b; --amber:#d4850a; --green:#27ae60;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:#111;color:var(--ink);min-height:100vh;}
+
+.page{display:none;}
+.page.on{display:block;animation:fadeUp 0.35s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ══════════════════════════════════
+   인트로 카드뉴스
+══════════════════════════════════ */
+.intro-page{min-height:100vh;display:flex;flex-direction:column;background:#111;position:relative;overflow:hidden;}
+
+/* 상단 로고 바 */
+.intro-topbar{padding:1.2rem 2.5rem;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:10;}
+.intro-logo{font-family:'Fraunces',serif;font-size:1.1rem;color:rgba(255,255,255,0.85);display:flex;align-items:center;gap:0.5rem;}
+.intro-logo::before{content:'❋';color:#a8b88a;}
+.intro-skip{background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);padding:0.35rem 0.9rem;font-size:0.72rem;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;transition:all 0.2s;}
+.intro-skip:hover{color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.3);}
+
+/* 카드 스택 */
+.card-stage{flex:1;display:flex;align-items:center;justify-content:center;padding:1rem 2rem 0;position:relative;}
+.intro-card{position:absolute;width:100%;max-width:640px;display:none;flex-direction:column;justify-content:center;animation:cardIn 0.5s cubic-bezier(0.22,1,0.36,1);}
+.intro-card.active{display:flex;}
+.intro-card.exit{animation:cardOut 0.35s ease forwards;}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes cardOut{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(-16px);}}
+
+/* 카드 타입별 스타일 */
+.ic-kicker{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.3em;margin-bottom:1.2rem;display:flex;align-items:center;gap:0.5rem;}
+.ic-kicker::before{content:'';width:16px;height:1px;}
+.ic-body{}
+
+/* 타입 A: 질문형 (어두운 배경에 크게) */
+.ic-type-q .ic-kicker{color:rgba(255,255,255,0.3);}
+.ic-type-q .ic-kicker::before{background:rgba(255,255,255,0.3);}
+.ic-q-main{font-family:'Fraunces',serif;font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:400;line-height:1.25;letter-spacing:-0.03em;color:#f5f1ea;margin-bottom:1.2rem;}
+.ic-q-main em{font-style:italic;color:#a8b88a;}
+.ic-q-sub{font-family:'Fraunces',serif;font-size:1rem;color:rgba(245,241,234,0.5);line-height:1.7;font-weight:300;}
+
+/* 타입 B: 목록형 (불안 나열) */
+.ic-type-list .ic-kicker{color:rgba(255,255,255,0.3);}
+.ic-type-list .ic-kicker::before{background:rgba(255,255,255,0.3);}
+.ic-list-title{font-family:'Fraunces',serif;font-size:1.5rem;color:#f5f1ea;margin-bottom:1.4rem;font-weight:400;}
+.ic-list-title em{font-style:italic;color:#a8b88a;}
+.ic-items{display:flex;flex-direction:column;gap:0.7rem;}
+.ic-item{display:flex;align-items:flex-start;gap:0.9rem;padding:0.9rem 1.1rem;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);}
+.ic-item-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:0.35rem;}
+.ic-item-dot.r{background:#c0392b;}
+.ic-item-dot.a{background:#d4850a;}
+.ic-item-dot.w{background:rgba(255,255,255,0.25);}
+.ic-item-text{font-family:'Fraunces',serif;font-size:0.95rem;color:rgba(245,241,234,0.75);line-height:1.55;}
+
+/* 타입 C: 전환 (밝은 크림 카드) */
+.ic-type-turn{background:var(--cream);padding:3rem;}
+.ic-type-turn .ic-kicker{color:var(--olive);}
+.ic-type-turn .ic-kicker::before{background:var(--olive);}
+.ic-turn-main{font-family:'Fraunces',serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:400;line-height:1.3;letter-spacing:-0.025em;color:var(--ink);margin-bottom:1rem;}
+.ic-turn-main em{font-style:italic;color:var(--olive);}
+.ic-turn-sub{font-family:'Fraunces',serif;font-size:0.95rem;color:var(--ink2);line-height:1.75;font-weight:300;}
+
+/* 타입 D: 정체성 (어두운, 인용구 스타일) */
+.ic-type-identity .ic-kicker{color:#a8b88a;}
+.ic-type-identity .ic-kicker::before{background:#a8b88a;}
+.ic-id-quote{font-family:'Fraunces',serif;font-size:clamp(1.4rem,3.5vw,2rem);font-weight:400;line-height:1.4;color:#f5f1ea;margin-bottom:1.4rem;font-style:italic;}
+.ic-id-quote strong{font-style:normal;color:#a8b88a;}
+.ic-id-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-top:1.6rem;}
+.ic-id-fact{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);padding:0.9rem;text-align:center;}
+.ic-id-fact-n{font-family:'Fraunces',serif;font-size:1.5rem;color:#f5f1ea;line-height:1;}
+.ic-id-fact-l{font-family:'JetBrains Mono',monospace;font-size:0.52rem;color:#a8b88a;letter-spacing:0.1em;margin-top:0.3rem;}
+
+/* 타입 E: CTA 최종 */
+.ic-type-cta{background:var(--olive);padding:3rem;}
+.ic-type-cta .ic-kicker{color:rgba(255,255,255,0.5);}
+.ic-type-cta .ic-kicker::before{background:rgba(255,255,255,0.4);}
+.ic-cta-main{font-family:'Fraunces',serif;font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:400;line-height:1.2;letter-spacing:-0.03em;color:#fff;margin-bottom:1rem;}
+.ic-cta-main em{font-style:italic;color:rgba(255,255,255,0.75);}
+.ic-cta-sub{font-family:'Fraunces',serif;font-size:0.97rem;color:rgba(255,255,255,0.75);line-height:1.7;font-weight:300;margin-bottom:2rem;}
+.ic-cta-btns{display:flex;flex-direction:column;gap:0.6rem;}
+.ic-cta-btn-main{background:#fff;color:var(--olive);border:none;padding:1rem 1.5rem;font-family:'Inter',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:opacity 0.2s;}
+.ic-cta-btn-main:hover{opacity:0.92;}
+.ic-cta-btn-sub{background:rgba(0,0,0,0.15);color:rgba(255,255,255,0.8);border:none;padding:0.85rem 1.5rem;font-family:'Inter',sans-serif;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:opacity 0.2s;}
+.ic-cta-btn-sub:hover{opacity:0.8;}
+
+/* 하단 네비 */
+.intro-nav{padding:1.5rem 2.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;position:relative;z-index:10;}
+.intro-dots{display:flex;gap:0.5rem;}
+.i-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;cursor:pointer;}
+.i-dot.on{background:#a8b88a;width:20px;border-radius:3px;}
+.i-dot.done{background:rgba(168,184,138,0.4);}
+.intro-arrows{display:flex;gap:0.6rem;}
+.i-arr{background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);width:40px;height:40px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.i-arr:hover{border-color:rgba(255,255,255,0.4);color:rgba(255,255,255,0.8);}
+.i-arr:disabled{opacity:0.2;cursor:default;}
+.i-arr.olive{background:#a8b88a;border-color:#a8b88a;color:#fff;}
+.i-arr.olive:hover{background:var(--olive-d);border-color:var(--olive-d);}
+
+/* ── 히어로 ── */
+.hero-page{min-height:100vh;background:var(--cream);display:flex;flex-direction:column;}
+.nav{padding:1.1rem 3rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:var(--paper);}
+.nav-logo{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:500;display:flex;align-items:center;gap:0.5rem;color:var(--ink);}
+.nav-logo::before{content:'❋';color:var(--olive);}
+.nav-logo sub{font-family:'JetBrains Mono',monospace;font-size:0.52rem;color:var(--mute);letter-spacing:0.1em;margin-left:0.15rem;font-style:normal;}
+.nav-links{display:flex;gap:2rem;align-items:center;}
+.nav-links a{font-size:0.82rem;color:var(--ink2);text-decoration:none;}
+.nav-links a:hover{color:var(--olive);}
+.nav-cta{background:var(--ink) !important;color:var(--cream) !important;padding:0.5rem 1.2rem;font-size:0.78rem !important;cursor:pointer;border:none;font-family:'Inter',sans-serif;}
+.hero-body{flex:1;display:grid;grid-template-columns:1.1fr 0.9fr;gap:4rem;max-width:1200px;margin:0 auto;width:100%;padding:4rem 3rem;align-items:center;}
+.h-eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.32em;color:var(--olive);margin-bottom:1rem;display:flex;align-items:center;gap:0.6rem;}
+.h-eyebrow::before{content:'';width:20px;height:1px;background:var(--olive);}
+.h-h1{font-family:'Fraunces',serif;font-size:2.8rem;font-weight:400;line-height:1.2;letter-spacing:-0.03em;margin-bottom:1.2rem;}
+.h-h1 em{font-style:italic;color:var(--olive);}
+.h-p{font-family:'Fraunces',serif;font-size:1rem;color:var(--ink2);line-height:1.75;margin-bottom:2rem;font-weight:300;max-width:480px;}
+.h-choice-label{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.28em;color:var(--olive);margin-bottom:0.8rem;}
+.h-btns{display:flex;flex-direction:column;gap:0.7rem;max-width:480px;}
+.hbtn{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:600;transition:all 0.2s;}
+.hbtn-lsc{background:var(--ink);color:var(--cream);}
+.hbtn-lsc:hover{background:var(--olive-d);}
+.hbtn-consult{background:var(--terra);color:#fff;}
+.hbtn-consult:hover{opacity:0.88;}
+.hbtn-sub{font-size:0.7rem;font-weight:400;opacity:0.65;margin-left:0.4rem;}
+.hbtn-arr{font-size:1rem;opacity:0.6;flex-shrink:0;margin-left:1rem;}
+.h-panel{background:var(--ink);padding:2rem;color:var(--cream);}
+.hp-kicker{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.28em;color:#a8b88a;margin-bottom:1rem;}
+.hp-stats{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1.4rem;}
+.hp-stat{background:rgba(255,255,255,0.05);padding:0.9rem;text-align:center;}
+.hp-n{font-family:'Fraunces',serif;font-size:1.8rem;color:#f5f1ea;line-height:1;}
+.hp-n span{font-size:1rem;}
+.hp-l{font-family:'JetBrains Mono',monospace;font-size:0.52rem;color:#a8b88a;letter-spacing:0.1em;margin-top:0.3rem;}
+.hp-divider{height:1px;background:rgba(255,255,255,0.07);margin-bottom:1.2rem;}
+.hp-quote{font-family:'Fraunces',serif;font-size:0.87rem;color:rgba(245,241,234,0.7);line-height:1.7;}
+.hp-quote strong{color:#a8b88a;font-weight:500;}
+.hp-trust{margin-top:1.2rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:1rem;flex-wrap:wrap;}
+.trust-item{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.12em;color:rgba(255,255,255,0.3);}
+
+/* ── LSC ── */
+.lsc-page{min-height:100vh;background:var(--ink);}
+.lsc-nav{background:#1a1a1a;padding:0.9rem 3rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);}
+.lsc-nav-logo{font-family:'Fraunces',serif;font-size:1rem;color:#f5f1ea;display:flex;align-items:center;gap:0.4rem;}
+.lsc-nav-logo::before{content:'❋';color:#a8b88a;}
+.lsc-pb-wrap{flex:1;max-width:300px;margin:0 2rem;}
+.lsc-pb{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;}
+.lsc-pb-fill{height:100%;background:#a8b88a;transition:width 0.4s ease;}
+.lsc-pb-label{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.15em;color:rgba(255,255,255,0.3);margin-top:0.35rem;}
+.lsc-nav-back{background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);padding:0.4rem 0.9rem;font-size:0.75rem;cursor:pointer;font-family:'Inter',sans-serif;}
+.lsc-wrap{max-width:800px;margin:0 auto;padding:2.5rem 2rem;}
+.lsc-eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.28em;color:#a8b88a;margin-bottom:1.5rem;}
+.lsc-card{background:var(--cream);overflow:hidden;}
+
+/* 탭 */
+.tab-menu{display:flex;overflow-x:auto;border-bottom:2px solid var(--line);background:var(--paper);scrollbar-width:none;}
+.tab-menu::-webkit-scrollbar{display:none;}
+.tm-tab{padding:0.8rem 1rem;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;color:var(--mute);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all 0.2s;display:flex;align-items:center;gap:0.35rem;flex-shrink:0;}
+.tm-tab:hover{color:var(--ink);}
+.tm-tab.active{color:var(--olive);border-bottom-color:var(--olive);}
+.tab-dot{width:6px;height:6px;border-radius:50%;background:var(--line);transition:background 0.2s;flex-shrink:0;}
+.tm-tab.active .tab-dot,.tm-tab.filled .tab-dot{background:var(--olive);}
+.tm-tab.filled{color:var(--ink2);}
+.tab-check{font-size:0.65rem;color:var(--olive);display:none;}
+.tm-tab.filled .tab-check{display:inline;}
+.tm-tab.filled .tab-dot{display:none;}
+
+/* 탭 콘텐츠 */
+.tab-content{padding:2rem;}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;animation:fadeUp 0.25s ease;}
+.tc-step{font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.22em;color:var(--olive);margin-bottom:0.4rem;}
+.tc-title{font-family:'Fraunces',serif;font-size:1.65rem;font-weight:500;margin-bottom:0.3rem;letter-spacing:-0.02em;}
+.tc-title em{font-style:italic;color:var(--olive);}
+.tc-sub{font-size:0.82rem;color:var(--mute);margin-bottom:1.4rem;padding-bottom:1.2rem;border-bottom:1px solid var(--line);line-height:1.55;}
+.field-label{display:block;font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink2);margin-bottom:0.65rem;margin-top:1.1rem;}
+.field-label:first-of-type{margin-top:0;}
+.chips{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.3rem;}
+.chip{padding:0.5rem 0.9rem;border:1px solid var(--line);background:white;font-size:0.8rem;color:var(--ink);cursor:pointer;transition:all 0.15s;user-select:none;}
+.chip:hover{border-color:var(--ink2);}
+.chip.sel{background:var(--ink);border-color:var(--ink);color:var(--cream);}
+.chip.sel-g{background:var(--olive);border-color:var(--olive);color:#fff;}
+.chip.warn{background:rgba(192,57,43,0.05);border-color:rgba(192,57,43,0.25);color:#a32820;}
+.chip.warn:hover{border-color:var(--red);}
+.chip.warn.sel{background:var(--red);border-color:var(--red);color:#fff;}
+/* 기타 입력란 */
+.etc-wrap{margin-top:1.2rem;padding-top:1.1rem;border-top:1px solid var(--line);}
+.etc-input{width:100%;padding:0.75rem 1rem;border:1px solid var(--line);background:white;font-family:"Inter",sans-serif;font-size:0.83rem;color:var(--ink);resize:none;min-height:72px;line-height:1.6;outline:none;transition:border-color 0.15s;}
+.etc-input::placeholder{color:var(--mute);}
+.etc-input:focus{border-color:var(--olive);}
+.alert-banner{background:rgba(192,57,43,0.06);border-left:3px solid var(--red);padding:0.75rem 1rem;font-size:0.78rem;color:#a32820;font-family:'Fraunces',serif;line-height:1.55;margin-top:1rem;display:none;}
+.alert-banner.show{display:block;}
+
+/* 하단 */
+.lsc-footer{padding:1rem 2rem;background:var(--paper);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.prog-dots{display:flex;gap:0.35rem;flex-wrap:wrap;}
+.pd{width:7px;height:7px;border-radius:50%;background:var(--line);transition:all 0.2s;cursor:pointer;}
+.pd.done{background:var(--olive);}
+.pd.curr{background:var(--olive);width:22px;border-radius:3px;}
+.foot-btns{display:flex;gap:0.6rem;}
+.btn-back{background:none;border:1px solid var(--line);color:var(--mute);padding:0.55rem 1rem;font-size:0.8rem;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-back:hover{border-color:var(--ink2);color:var(--ink);}
+.btn-next{background:var(--ink);color:var(--cream);border:none;padding:0.55rem 1.3rem;font-size:0.82rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;transition:background 0.2s;}
+.btn-next:hover{background:var(--olive-d);}
+.btn-result{background:var(--olive);color:#fff;border:none;padding:0.6rem 1.5rem;font-size:0.85rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:700;}
+.btn-result:hover{background:var(--olive-d);}
+
+/* ── 결과 ── */
+.result-page{min-height:100vh;background:var(--ink);}
+.result-nav{background:#1a1a1a;padding:0.9rem 3rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);}
+.result-nav-logo{font-family:'Fraunces',serif;font-size:1rem;color:#f5f1ea;display:flex;align-items:center;gap:0.4rem;}
+.result-nav-logo::before{content:'❋';color:#a8b88a;}
+.result-nav-date{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;color:rgba(255,255,255,0.3);}
+.result-wrap{max-width:760px;margin:0 auto;padding:2.5rem 2rem;}
+.result-card{background:var(--cream);overflow:hidden;}
+.result-head{background:var(--ink);padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;}
+.rh-kicker{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.25em;color:#a8b88a;margin-bottom:0.3rem;}
+.rh-title{font-family:'Fraunces',serif;font-size:1.1rem;color:#f5f1ea;}
+.rh-meta{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:rgba(255,255,255,0.35);text-align:right;line-height:1.7;white-space:pre;}
+.result-body{padding:2rem 2rem 0;}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.22em;color:var(--mute);margin-bottom:0.9rem;}
+.signal-cards{display:flex;flex-direction:column;gap:0.7rem;margin-bottom:2rem;}
+.sc{border:1px solid var(--line);background:white;overflow:hidden;}
+.sc-inner{display:flex;align-items:stretch;}
+.sc-light{width:10px;flex-shrink:0;}
+.sc-light.r{background:var(--red);}
+.sc-light.a{background:var(--amber);}
+.sc-light.g{background:var(--green);}
+.sc-body{padding:1rem 1.2rem;flex:1;}
+.sc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem;gap:0.5rem;}
+.sc-name{font-family:'Fraunces',serif;font-size:1rem;font-weight:500;}
+.sc-badge{font-size:0.62rem;font-weight:700;padding:0.2rem 0.55rem;flex-shrink:0;}
+.sc-badge.r{background:rgba(192,57,43,0.1);color:var(--red);}
+.sc-badge.a{background:rgba(212,133,10,0.1);color:var(--amber);}
+.sc-badge.g{background:rgba(39,174,96,0.1);color:var(--green);}
+.sc-combo{font-size:0.78rem;color:var(--ink2);line-height:1.55;margin-bottom:0.45rem;}
+.sc-action{font-size:0.76rem;color:var(--olive);font-family:'Fraunces',serif;font-style:italic;}
+.clinical-box{background:rgba(90,107,63,0.07);border-left:3px solid var(--olive);padding:1.1rem 1.3rem;margin-bottom:2rem;}
+.cb-kicker{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.2em;color:var(--olive);margin-bottom:0.4rem;}
+.cb-text{font-family:'Fraunces',serif;font-size:0.88rem;color:var(--ink2);line-height:1.7;}
+.options-label{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.22em;color:var(--mute);margin-bottom:0.9rem;}
+.options-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;}
+.options-wrap{padding:2rem;border-top:2px solid var(--line);background:var(--paper);}
+.opt{padding:1.2rem 1rem;border:1px solid var(--line);background:var(--paper);cursor:pointer;transition:all 0.2s;position:relative;}
+.opt::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.opt-a::before{background:var(--olive);}
+.opt-b::before{background:var(--blue);}
+.opt-c::before{background:var(--terra);}
+.opt:hover{transform:translateY(-2px);box-shadow:0 8px 24px -6px rgba(0,0,0,0.12);}
+.opt-label{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;margin-bottom:0.45rem;}
+.opt-a .opt-label{color:var(--olive);}
+.opt-b .opt-label{color:var(--blue);}
+.opt-c .opt-label{color:var(--terra);}
+.opt-title{font-family:'Fraunces',serif;font-size:0.97rem;font-weight:500;margin-bottom:0.35rem;}
+.opt-desc{font-size:0.73rem;color:var(--mute);line-height:1.5;}
+/* ── 복용 타임라인 ── */
+.timeline-section{padding:2rem;border-top:1px solid var(--line);background:var(--paper);}
+.tl-sec-kicker{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.22em;color:var(--mute);margin-bottom:0.5rem;}
+.tl-sec-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:500;color:var(--ink);margin-bottom:0.3rem;}
+.tl-sec-note{font-size:0.8rem;color:var(--mute);margin-bottom:1.2rem;line-height:1.6;}
+.tl-intro{background:rgba(90,107,63,0.06);border-left:3px solid var(--olive);padding:0.75rem 0.9rem;margin-bottom:1.2rem;font-family:'Fraunces',serif;font-size:0.82rem;color:var(--ink2);line-height:1.65;}
+.tl-blocks{display:flex;flex-direction:column;gap:0.6rem;}
+.tl-block{border:1px solid var(--line);background:white;overflow:hidden;}
+.tl-block-head{background:var(--paper);padding:0.7rem 1rem;display:flex;align-items:center;gap:0.7rem;border-bottom:1px solid var(--line);}
+.tl-block-icon{font-size:1.1rem;flex-shrink:0;}
+.tl-block-info{flex:1;}
+.tl-block-time{font-family:'Fraunces',serif;font-size:0.88rem;font-weight:500;color:var(--ink);}
+.tl-block-note{font-size:0.72rem;color:var(--mute);margin-top:0.1rem;}
+.tl-block-count{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--mute);background:white;border:1px solid var(--line);padding:0.15rem 0.5rem;flex-shrink:0;}
+.tl-block-items{padding:0.6rem 0.9rem;display:flex;flex-direction:column;gap:0.5rem;}
+.tl-item{display:flex;align-items:flex-start;gap:0.7rem;padding:0.65rem 0.8rem;border-radius:2px;}
+.tl-item.new{background:rgba(90,107,63,0.06);}
+.tl-item.existing{background:rgba(0,0,0,0.02);}
+.tl-item.caution{background:rgba(212,133,10,0.06);}
+.tl-item-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:0.35rem;}
+.tl-item-dot.new{background:var(--olive);}
+.tl-item-dot.existing{background:var(--mute);}
+.tl-item-dot.caution{background:var(--amber);}
+.tl-item-body{flex:1;}
+.tl-item-name{font-family:'Fraunces',serif;font-size:0.88rem;font-weight:500;color:var(--ink);margin-bottom:0.2rem;display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;}
+.tl-badge{font-size:0.58rem;padding:0.1rem 0.45rem;font-family:'JetBrains Mono',monospace;letter-spacing:0.08em;}
+.tl-badge.new{background:var(--olive);color:#fff;}
+.tl-badge.existing{background:var(--line);color:var(--ink2);}
+.tl-badge.caution{background:var(--amber);color:#fff;}
+.tl-item-desc{font-size:0.76rem;color:var(--ink2);line-height:1.55;}
+.tl-empty{padding:0.9rem;text-align:center;font-family:'Fraunces',serif;font-size:0.82rem;color:var(--mute);font-style:italic;}
+.tl-legend{display:flex;gap:1.2rem;margin-top:1rem;flex-wrap:wrap;}
+.tl-leg-item{display:flex;align-items:center;gap:0.4rem;font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--mute);}
+.tl-leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.tl-warn-note{margin-top:1rem;background:rgba(212,133,10,0.06);border-left:3px solid var(--amber);padding:0.75rem 0.9rem;font-family:'Fraunces',serif;font-size:0.78rem;color:#854f0b;line-height:1.65;}
+
+/* ── 재정 리스크 섹션 ── */
+.finance-section{padding:2rem;border-top:3px solid var(--red);background:#fff;}
+.finance-kicker{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;color:var(--red);margin-bottom:0.5rem;}
+.finance-title{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:500;color:var(--ink);margin-bottom:0.3rem;}
+.finance-sub{font-family:'Fraunces',serif;font-size:0.85rem;color:var(--mute);margin-bottom:1.4rem;line-height:1.6;}
+
+/* 치료비 환산 카드 */
+.finance-cards{display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.5rem;}
+.finance-card{display:grid;grid-template-columns:1fr 1.2fr 1.1fr;align-items:center;gap:0.5rem;padding:0.85rem 1rem;border:1px solid var(--line);background:var(--paper);}
+.fc-risk{font-family:'Fraunces',serif;font-size:0.9rem;color:var(--ink);font-weight:500;}
+.fc-cost{font-family:'Fraunces',serif;font-size:0.88rem;color:var(--red);font-weight:600;}
+.fc-period{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;color:var(--mute);}
+.finance-reality{background:rgba(192,57,43,0.05);border-left:3px solid var(--red);padding:0.9rem 1.1rem;margin-bottom:1.5rem;font-family:'Fraunces',serif;font-size:0.88rem;color:#a32820;line-height:1.7;}
+
+/* 보험 공백 3문항 */
+.insurance-check{background:var(--ink);padding:1.5rem;margin-bottom:0;}
+.ic-check-title{font-family:'Fraunces',serif;font-size:1rem;color:#f5f1ea;margin-bottom:0.3rem;}
+.ic-check-sub{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;color:rgba(255,255,255,0.3);margin-bottom:1.2rem;}
+.ic-q-wrap{display:flex;flex-direction:column;gap:1rem;margin-bottom:1.3rem;}
+.ic-q{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:1rem;}
+.ic-q-label{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;color:#a8b88a;margin-bottom:0.6rem;}
+.ic-q-text{font-family:'Fraunces',serif;font-size:0.9rem;color:#f5f1ea;margin-bottom:0.7rem;}
+.ic-opts{display:flex;flex-wrap:wrap;gap:0.4rem;}
+.ic-opt{padding:0.4rem 0.8rem;border:1px solid rgba(255,255,255,0.15);background:none;color:rgba(255,255,255,0.55);font-family:'Inter',sans-serif;font-size:0.78rem;cursor:pointer;transition:all 0.15s;}
+.ic-opt:hover{border-color:rgba(255,255,255,0.4);color:#f5f1ea;}
+.ic-opt.picked{background:#a8b88a;border-color:#a8b88a;color:var(--ink);font-weight:600;}
+.ic-opt.picked-warn{background:var(--red);border-color:var(--red);color:#fff;font-weight:600;}
+
+/* 보험 진단 결과 */
+.insurance-result{display:none;margin-top:1.2rem;padding:1rem;border:1px solid rgba(255,255,255,0.1);}
+.ir-signal{display:flex;align-items:center;gap:0.8rem;margin-bottom:0.7rem;}
+.ir-light{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.ir-light.r{background:var(--red);}
+.ir-light.a{background:var(--amber);}
+.ir-light.g{background:var(--green);}
+.ir-label{font-family:'Fraunces',serif;font-size:0.97rem;color:#f5f1ea;font-weight:500;}
+.ir-desc{font-family:'Fraunces',serif;font-size:0.85rem;color:rgba(245,241,234,0.65);line-height:1.65;margin-bottom:1rem;}
+.ir-cta{display:flex;align-items:center;justify-content:space-between;background:#a8b88a;padding:0.9rem 1.1rem;cursor:pointer;border:none;width:100%;font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:700;color:var(--ink);transition:opacity 0.2s;}
+.ir-cta:hover{opacity:0.88;}
+.ir-cta-warn{background:var(--red);color:#fff;}
+
+/* ── 리포트 신청 모달 ── */
+.report-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+.report-modal-overlay.open{display:flex;}
+.report-modal{background:var(--paper);max-width:520px;width:100%;position:relative;}
+.rm-head{background:var(--ink);padding:1.3rem 1.8rem;display:flex;align-items:center;justify-content:space-between;}
+.rm-head-title{font-family:'Fraunces',serif;font-size:1.05rem;color:#f5f1ea;}
+.rm-head-sub{font-family:'JetBrains Mono',monospace;font-size:0.56rem;letter-spacing:0.18em;color:#a8b88a;margin-top:0.2rem;}
+.rm-close{background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);width:30px;height:30px;cursor:pointer;font-size:0.85rem;flex-shrink:0;}
+.rm-body{padding:1.5rem 1.8rem;}
+.rm-preview{background:var(--cream2);border:1px solid var(--line);padding:0.9rem 1.1rem;margin-bottom:1.2rem;}
+.rm-preview-title{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;color:var(--olive);margin-bottom:0.6rem;}
+.rm-preview-items{display:flex;flex-direction:column;gap:0.3rem;}
+.rm-preview-item{font-family:'Fraunces',serif;font-size:0.82rem;color:var(--ink2);line-height:1.5;}
+.rm-preview-item .dot-r{color:var(--red);margin-right:0.3rem;}
+.rm-preview-item .dot-a{color:var(--amber);margin-right:0.3rem;}
+.rm-preview-item .dot-g{color:var(--green);margin-right:0.3rem;}
+.rm-input-wrap{margin-bottom:1rem;}
+.rm-input-label{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.18em;color:var(--ink2);margin-bottom:0.4rem;display:block;}
+.rm-input{width:100%;padding:0.65rem 0.9rem;border:1px solid var(--line);background:white;font-family:'Inter',sans-serif;font-size:0.88rem;color:var(--ink);outline:none;}
+.rm-input:focus{border-color:var(--olive);}
+.rm-submit{width:100%;background:var(--ink);color:var(--cream);border:none;padding:0.85rem;font-family:'Inter',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.5rem;transition:background 0.2s;}
+.rm-submit:hover{background:var(--olive-d);}
+.rm-submit:disabled{background:var(--mute);cursor:not-allowed;}
+.rm-notice{margin-top:0.8rem;font-family:'Fraunces',serif;font-size:0.78rem;color:var(--mute);line-height:1.6;text-align:center;}
+.rm-success{display:none;padding:1.5rem 1.8rem;text-align:center;}
+.rm-success-icon{font-size:2rem;margin-bottom:0.8rem;}
+.rm-success-title{font-family:'Fraunces',serif;font-size:1.1rem;color:var(--olive);margin-bottom:0.4rem;}
+.rm-success-desc{font-family:'Fraunces',serif;font-size:0.85rem;color:var(--ink2);line-height:1.7;}
+
+/* ── 모달 공통 ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;display:none;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--paper);max-width:640px;width:100%;position:relative;margin:auto;}
+.modal-head{background:var(--ink);padding:1.3rem 1.8rem;display:flex;align-items:center;justify-content:space-between;}
+.modal-head-kicker{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;color:#a8b88a;margin-bottom:0.2rem;}
+.modal-head-title{font-family:'Fraunces',serif;font-size:1.1rem;color:#f5f1ea;}
+.modal-close{background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);width:32px;height:32px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.modal-body{padding:1.8rem;max-height:70vh;overflow-y:auto;}
+.modal-body h4{font-family:'Fraunces',serif;font-size:1rem;font-weight:600;color:var(--ink);margin:1.4rem 0 0.5rem;padding-bottom:0.3rem;border-bottom:1px dashed var(--line);}
+.modal-body h4:first-child{margin-top:0;}
+.modal-body p{font-family:'Fraunces',serif;font-size:0.87rem;color:var(--ink2);line-height:1.85;margin-bottom:0.8rem;}
+.modal-body ul{padding-left:1.2rem;margin-bottom:0.8rem;}
+.modal-body li{font-family:'Fraunces',serif;font-size:0.85rem;color:var(--ink2);line-height:1.75;margin-bottom:0.3rem;}
+.modal-profile-head{background:var(--ink);padding:1.5rem 1.8rem;display:flex;align-items:flex-start;gap:1.2rem;}
+.modal-avatar{width:60px;height:60px;border-radius:50%;background:rgba(168,184,138,0.2);border:2px solid #a8b88a;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.modal-career{display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.2rem;}
+.modal-career-item{display:flex;align-items:flex-start;gap:0.8rem;padding:0.8rem 1rem;background:var(--paper);border-left:3px solid var(--olive);}
+.modal-career-label{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:700;color:var(--olive);letter-spacing:0.05em;margin-bottom:0.15rem;}
+.modal-career-val{font-family:'Fraunces',serif;font-size:0.87rem;color:var(--ink2);line-height:1.5;}
+.modal-principle{background:rgba(90,107,63,0.06);border:1px solid rgba(90,107,63,0.15);padding:1rem 1.2rem;}
+.modal-principle-kicker{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;color:var(--olive);margin-bottom:0.7rem;}
+.modal-principle-item{display:flex;align-items:flex-start;gap:0.5rem;font-family:'Fraunces',serif;font-size:0.85rem;color:var(--ink2);line-height:1.55;margin-bottom:0.4rem;}
+.modal-principle-item span{color:var(--olive);font-weight:700;flex-shrink:0;}
+
+/* ── 기본정보 섹션 (LSC 0번 탭) ── */
+.basic-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1rem;}
+.basic-field{display:flex;flex-direction:column;gap:0.4rem;}
+.basic-label{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.18em;color:var(--ink2);}
+.basic-input{padding:0.6rem 0.8rem;border:1px solid var(--line);background:white;font-family:'Inter',sans-serif;font-size:0.88rem;color:var(--ink);outline:none;transition:border-color 0.15s;}
+.basic-input:focus{border-color:var(--olive);}
+.basic-input.warn-input:focus{border-color:var(--red);}
+.basic-select{padding:0.6rem 0.8rem;border:1px solid var(--line);background:white;font-family:'Inter',sans-serif;font-size:0.88rem;color:var(--ink);outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8a8a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0.8rem center;}
+.bmi-box{grid-column:1/-1;padding:0.7rem 0.9rem;background:rgba(90,107,63,0.06);border-left:3px solid var(--olive);font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--ink2);}
+
+.result-footer{padding:1.5rem 2rem;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:var(--paper);}
+.btn-restart{background:none;border:1px solid var(--line);color:var(--mute);padding:0.55rem 1.1rem;font-size:0.78rem;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-restart:hover{border-color:var(--ink2);color:var(--ink);}
+.result-share{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;color:var(--mute);}
+
+/* ── 생활습관 우선순위 액션 ── */
+.action-section{padding:2rem;border-top:2px solid var(--line);margin-top:0;}
+.action-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;}
+.action-kicker{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.22em;color:var(--mute);}
+.action-note{font-family:'Fraunces',serif;font-size:0.78rem;color:var(--olive);font-style:italic;}
+.action-cards{display:flex;flex-direction:column;gap:0.7rem;}
+.action-card{border:1px solid var(--line);background:var(--paper);overflow:hidden;}
+.action-card-head{display:flex;align-items:stretch;}
+.action-rank{width:44px;background:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.action-rank-n{font-family:'Fraunces',serif;font-size:1.1rem;color:#a8b88a;font-style:italic;}
+.action-body{padding:0.9rem 1.1rem;flex:1;}
+.action-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:500;margin-bottom:0.5rem;color:var(--ink);}
+.action-rows{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 1rem;}
+.action-row{font-size:0.75rem;color:var(--ink2);line-height:1.5;}
+.action-row-label{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.15em;color:var(--mute);display:block;margin-bottom:0.1rem;}
+.action-how{font-size:0.75rem;color:var(--olive);font-family:'Fraunces',serif;font-style:italic;margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid var(--line);}
+.action-clinical{margin-top:1rem;padding:0.8rem 1rem;background:rgba(90,107,63,0.06);border-left:3px solid var(--olive);font-family:'Fraunces',serif;font-size:0.82rem;color:var(--ink2);line-height:1.65;font-style:italic;}
+
+/* ── 영양제 축약 ── */
+.supp-section{padding:2rem;border-top:1px solid var(--line);background:var(--cream2);}
+.supp-header{margin-bottom:1rem;}
+.supp-kicker{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.22em;color:var(--mute);margin-bottom:0.3rem;}
+.supp-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:500;color:var(--ink);}
+.supp-note{font-size:0.78rem;color:var(--mute);margin-top:0.2rem;}
+.supp-warning{background:rgba(90,107,63,0.07);border-left:3px solid var(--olive);padding:0.65rem 0.9rem;font-size:0.78rem;color:var(--olive);font-family:'Fraunces',serif;margin-bottom:1rem;}
+.supp-cards{display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;}
+.supp-card{background:white;border:1px solid var(--line);padding:0.85rem 1rem;display:flex;align-items:flex-start;gap:0.9rem;}
+.supp-rank-badge{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;padding:0.2rem 0.5rem;background:var(--ink);color:var(--cream);flex-shrink:0;margin-top:0.15rem;}
+.supp-info{flex:1;}
+.supp-name{font-family:'Fraunces',serif;font-size:0.95rem;font-weight:500;color:var(--ink);margin-bottom:0.2rem;}
+.supp-why{font-size:0.76rem;color:var(--ink2);line-height:1.5;margin-bottom:0.2rem;}
+.supp-timing{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;color:var(--mute);}
+.supp-more{text-align:center;padding:0.8rem;border:1px dashed var(--line);font-family:'Fraunces',serif;font-size:0.82rem;color:var(--mute);font-style:italic;cursor:pointer;background:none;width:100%;transition:all 0.2s;}
+.supp-more:hover{border-color:var(--olive);color:var(--olive);}
+
+/* ── 인쇄 스타일 ── */
+@media print {
+  body * { visibility: hidden; }
+  #page-result, #page-result * { visibility: visible; }
+  #page-result { position: absolute; left: 0; top: 0; width: 100%; }
+  .result-footer, .options-section, .result-cta-section { display: none !important; }
+  .result-card { box-shadow: none; border: 1px solid #ddd; }
+  .pdf-btn-wrap { display: none !important; }
+}
+
+/* ── 사이트 푸터 ── */
+.site-footer{background:#151515;border-top:1px solid rgba(255,255,255,0.06);padding:3rem 2.5rem 0;}
+.footer-inner{max-width:1100px;margin:0 auto;}
+.footer-top{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:3rem;padding-bottom:2.5rem;border-bottom:1px solid rgba(255,255,255,0.06);}
+.footer-brand{}
+.fb-logo{font-family:'Fraunces',serif;font-size:1.1rem;color:#f5f1ea;display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem;}
+.fb-logo::before{content:'❋';color:#a8b88a;}
+.fb-desc{font-family:'Fraunces',serif;font-size:0.85rem;color:rgba(245,241,234,0.45);line-height:1.75;margin-bottom:1.2rem;}
+.fb-blog{display:flex;align-items:flex-start;gap:0.75rem;padding:0.9rem 1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);text-decoration:none;transition:background 0.2s;}
+.fb-blog:hover{background:rgba(255,255,255,0.07);}
+.fb-blog-icon{color:#a8b88a;font-size:0.9rem;flex-shrink:0;margin-top:0.1rem;}
+.fb-blog-text{}
+.fb-blog-name{font-family:'Fraunces',serif;font-size:0.88rem;color:#f5f1ea;margin-bottom:0.2rem;}
+.fb-blog-sub{font-family:'JetBrains Mono',monospace;font-size:0.52rem;letter-spacing:0.1em;color:rgba(255,255,255,0.3);}
+.fb-blog-arr{margin-left:auto;color:#a8b88a;font-size:0.85rem;flex-shrink:0;align-self:center;}
+
+.footer-col{}
+.fc-label{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.28em;color:rgba(255,255,255,0.3);margin-bottom:1.1rem;}
+.fc-links{display:flex;flex-direction:column;gap:0.55rem;}
+.fc-link{font-family:'Fraunces',serif;font-size:0.88rem;color:rgba(245,241,234,0.55);text-decoration:none;transition:color 0.15s;display:flex;align-items:center;gap:0.3rem;cursor:pointer;background:none;border:none;text-align:left;padding:0;}
+.fc-link:hover{color:#f5f1ea;}
+.fc-link .ext{font-size:0.7rem;color:#a8b88a;}
+
+.footer-bottom{padding:1.2rem 0;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.fb-copy{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.12em;color:rgba(255,255,255,0.2);}
+.fb-note{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.12em;color:rgba(255,255,255,0.2);}
+
+@media(max-width:700px){
+  .footer-top{grid-template-columns:1fr 1fr;gap:2rem;}
+  .footer-brand{grid-column:1/-1;}
+}
+
+@media(max-width:700px){
+  .hero-body{grid-template-columns:1fr;padding:2rem 1.5rem;gap:2rem;}
+  .h-panel{display:none;}
+  .nav{padding:0.9rem 1.5rem;}
+  .nav-links{gap:1rem;}
+  .h-h1{font-size:2rem;}
+  .lsc-wrap,.result-wrap{padding:1.5rem 1rem;}
+  .lsc-nav,.result-nav{padding:0.9rem 1.5rem;}
+  .options-grid{grid-template-columns:1fr;}
+  .tab-content{padding:1.5rem;}
+  .result-body{padding:1.5rem 1.5rem 0;}
+  .action-section,.supp-section,.timeline-section,.finance-section,.options-wrap{padding:1.5rem;}
+  .options-grid{grid-template-columns:1fr !important;}
+  .lsc-pb-wrap{display:none;}
+}
+</style>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  // ★ 실제 계정 생성 후 아래 ID 교체
+  const EMAILJS_PUBLIC_KEY  = 'GWH-l0G51Lf8Q4Ydm';   // EmailJS Public Key
+  const EMAILJS_SERVICE_ID  = 'service_njt98ck';   // EmailJS Service ID
+  const EMAILJS_TEMPLATE_USER = 'YOUR_TEMPLATE_USER'; // 사용자 수신 템플릿 (EmailJS 장애 해제 후 입력)
+  const EMAILJS_TEMPLATE_ADMIN = 'YOUR_TEMPLATE_ADMIN'; // 선생님 수신 템플릿 (EmailJS 장애 해제 후 입력)
+  const FORMSPREE_ID        = 'xbdwgwqk'; // Formspree Form ID
+</script>
+</head>
+<body>
+
+<!-- ══ 인트로 카드뉴스 ══ -->
+<div class="page on" id="page-intro">
+  <div class="intro-page">
+    <div class="intro-topbar">
+      <div class="intro-logo">CareLab</div>
+      <button class="intro-skip" onclick="goHero()">건너뛰기 →</button>
+    </div>
+
+    <div class="card-stage">
+
+      <!-- 카드 1: 공감 -->
+      <div class="intro-card active" id="ic0">
+        <div class="ic-kicker" style="color:rgba(255,255,255,0.3);margin-bottom:1.2rem;display:flex;align-items:center;gap:0.5rem;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.28em;">
+          <span style="width:16px;height:1px;background:rgba(255,255,255,0.2);display:inline-block;flex-shrink:0;"></span>요즘 이런 느낌, 없으신가요?
+        </div>
+        <div class="ic-q-main">요즘 부쩍<br/><em>피로하지 않으신가요?</em></div>
+        <div class="ic-q-sub">특별히 아픈 건 아닌데, 예전만큼 활력이 없고<br/>몸이 무겁고 개운하지 않은 날이 늘어났다면.</div>
+      </div>
+
+      <!-- 카드 2: 불안 목록 -->
+      <div class="intro-card" id="ic1">
+        <div class="ic-kicker" style="color:rgba(255,255,255,0.3);margin-bottom:1.4rem;display:flex;align-items:center;gap:0.5rem;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.28em;">
+          <span style="width:16px;height:1px;background:rgba(255,255,255,0.2);display:inline-block;flex-shrink:0;"></span>혹시 이런 생각도 드시나요?
+        </div>
+        <div class="ic-list-title">마음 한켠에 <em>쌓인 걱정들</em></div>
+        <div class="ic-items">
+          <div class="ic-item"><div class="ic-item-dot r"></div><div class="ic-item-text">분명히 아픈 건 아닌데, 몸이 예전 같지가 않다</div></div>
+          <div class="ic-item"><div class="ic-item-dot a"></div><div class="ic-item-text">매일 챙겨 먹는 약이며 영양제며 — 제대로 먹고 있는 건지, 같이 먹으면 안 되는 건 없는지</div></div>
+          <div class="ic-item"><div class="ic-item-dot r"></div><div class="ic-item-text">갑자기 큰 병이라도 생기면 — 우리 가족은 어떻게 되는 걸까</div></div>
+          <div class="ic-item"><div class="ic-item-dot w"></div><div class="ic-item-text">가족 중에 암이 있었다. 혹시 나도…</div></div>
+        </div>
+      </div>
+
+      <!-- 카드 3: 두려움 -->
+      <div class="intro-card" id="ic2">
+        <div class="ic-kicker" style="color:rgba(255,255,255,0.3);margin-bottom:1.2rem;display:flex;align-items:center;gap:0.5rem;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.28em;">
+          <span style="width:16px;height:1px;background:rgba(255,255,255,0.2);display:inline-block;flex-shrink:0;"></span>가장 두려운 질문
+        </div>
+        <div class="ic-q-main">이 증상들이<br/><em>질병의 신호는</em><br/>아닐까…</div>
+        <div class="ic-q-sub">병원 가기엔 애매하고, 그냥 넘기기엔 찜찜한.<br/>이 불안을 혼자 안고 지내는 분들이 생각보다 많습니다.</div>
+      </div>
+
+      <!-- 카드 4: 전환 (크림 배경) -->
+      <div class="intro-card" id="ic3">
+        <div class="ic-type-turn">
+          <div class="ic-kicker" style="color:var(--olive);margin-bottom:1.2rem;display:flex;align-items:center;gap:0.5rem;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.28em;">
+            <span style="width:16px;height:1px;background:var(--olive);display:inline-block;flex-shrink:0;"></span>그래서 CareLab이 만들어졌습니다
+          </div>
+          <div class="ic-turn-main">그 불안, 혼자<br/><em>안고 있지 않아도</em> 됩니다.</div>
+          <div class="ic-turn-sub">병원 갈 정도는 아닌 것 같은데, 그냥 두기엔 걱정되는 그 지점.<br/>정확하게 어디에 리스크가 있는지, 무엇부터 바꿔야 하는지<br/>이제 혼자 고민하지 않아도 됩니다.</div>
+        </div>
+      </div>
+
+      <!-- 카드 5: 정체성 — 이력 팩트 중심 -->
+      <div class="intro-card" id="ic4">
+        <div class="ic-kicker" style="color:#a8b88a;margin-bottom:1.6rem;display:flex;align-items:center;gap:0.5rem;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.28em;">
+          <span style="width:16px;height:1px;background:#a8b88a;display:inline-block;flex-shrink:0;"></span>CareLab을 만든 사람
+        </div>
+        <div class="ic-id-quote" style="font-size:clamp(1.3rem,3.2vw,1.8rem);margin-bottom:1.6rem;">
+          "30년간 수술실에서, 외과에서, 암센터에서 —<br/><strong>아픈 분들 곁에 있었습니다.</strong>"
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.4rem;">
+          <div style="display:flex;align-items:flex-start;gap:0.9rem;padding:0.85rem 1rem;background:rgba(255,255,255,0.04);border-left:2px solid #a8b88a;">
+            <span style="font-size:1rem;flex-shrink:0;">🏥</span>
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;color:#a8b88a;margin-bottom:0.2rem;">임상 경력</div>
+              <div style="font-family:'Fraunces',serif;font-size:0.88rem;color:rgba(245,241,234,0.8);line-height:1.5;">30년 임상 경험 · 수술실·외과·암센터·소화기내과 등 다양한 임상 현장</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:0.9rem;padding:0.85rem 1rem;background:rgba(255,255,255,0.04);border-left:2px solid #a8b88a;">
+            <span style="font-size:1rem;flex-shrink:0;">🎓</span>
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;color:#a8b88a;margin-bottom:0.2rem;">학력·자격</div>
+              <div style="font-family:'Fraunces',serif;font-size:0.88rem;color:rgba(245,241,234,0.8);line-height:1.5;">의료경영 석사(MBA) · 건강보험 설계 전문자격</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:0.9rem;padding:0.85rem 1rem;background:rgba(255,255,255,0.04);border-left:2px solid #a8b88a;">
+            <span style="font-size:1rem;flex-shrink:0;">📋</span>
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;color:#a8b88a;margin-bottom:0.2rem;">운영 원칙</div>
+              <div style="font-family:'Fraunces',serif;font-size:0.88rem;color:rgba(245,241,234,0.8);line-height:1.5;">광고·제휴·판매 없음 · 임상 근거 기반 · 안전 우선</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-family:'Fraunces',serif;font-size:0.83rem;color:rgba(245,241,234,0.4);line-height:1.6;">
+          자격증이 아니라, 그 시간들이 쌓아준 안목으로 CareLab을 만들었습니다.
+        </div>
+      </div>
+
+      <!-- 카드 6: CareLab 취지 (크림 배경) -->
+      <div class="intro-card" id="ic5">
+        <div class="ic-type-turn">
+          <div class="ic-kicker" style="color:var(--olive);margin-bottom:1.2rem;display:flex;align-items:center;gap:0.5rem;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.28em;">
+            <span style="width:16px;height:1px;background:var(--olive);display:inline-block;flex-shrink:0;"></span>CareLab이 다른 이유
+          </div>
+          <div class="ic-turn-main">그 아쉬움들이<br/><em>CareLab을 만들었습니다.</em></div>
+          <div class="ic-turn-sub">
+            조금만 일찍 알았더라면 —<br/>
+            치료 전 이 생활습관만 바꿨어도,<br/>
+            치료 중 이 영양 관리를 알았더라면,<br/>
+            재정적 어려움은 이 보험 하나로 피할 수 있었는데.<br/><br/>
+            병이 생기고 나서야 "이걸 미리 알았더라면" 하는 분들을<br/>
+            30년간 너무 많이 봤습니다.<br/>
+            그 아쉬움이 쌓여 이 사이트를 만들었습니다.
+          </div>
+        </div>
+      </div>
+
+      <!-- 카드 7: CTA (올리브 배경) -->
+      <div class="intro-card" id="ic6">
+        <div class="ic-type-cta">
+          <div class="ic-kicker" style="color:rgba(255,255,255,0.5);margin-bottom:1.2rem;display:flex;align-items:center;gap:0.5rem;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.28em;">
+            <span style="width:16px;height:1px;background:rgba(255,255,255,0.35);display:inline-block;flex-shrink:0;"></span>지금 시작하세요
+          </div>
+          <div class="ic-cta-main">내 생활습관,<br/><em>5분으로 확인</em>하세요.</div>
+          <div class="ic-cta-sub">어디에 빨간불이 켜져 있는지, 무엇부터 바꿔야 하는지.<br/>30여 년의 경험이 담긴 Life Style Check.</div>
+          <div class="ic-cta-btns" style="gap:0;">
+            <button class="ic-cta-btn-main" onclick="goLSC()">
+              <span>🌿 Life Style Check 시작하기</span><span>→</span>
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card-stage -->
+
+    <div class="intro-nav">
+      <div class="intro-dots" id="introDots"></div>
+      <div class="intro-arrows">
+        <button class="i-arr" id="iArrPrev" onclick="introMove(-1)" disabled>←</button>
+        <button class="i-arr olive" id="iArrNext" onclick="introMove(1)">→</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ① 히어로 -->
+<div class="page" id="page-hero">
+  <div class="hero-page">
+    <nav class="nav">
+      <div class="nav-logo">CareLab <sub>by 30년 임상 경험</sub></div>
+      <div class="nav-links">
+        <a href="#">생활습관 체크</a>
+        <a href="#">건강 콘텐츠</a>
+        <a href="#">소개</a>
+      </div>
+    </nav>
+    <div class="hero-body">
+      <div>
+        <div class="h-eyebrow">30년간 수술실·외과·암센터 — 아픈 분들 곁에서 쌓은 경험</div>
+        <h1 class="h-h1">내 생활습관,<br/><em>어디에 빨간불</em>이<br/>켜져 있을까요?</h1>
+        <p class="h-p">어디가 아픈 건지 모르겠는데 몸이 예전 같지 않다면. 가족력이 있어 막연히 불안하다면. 지금 내 생활습관에 어떤 리스크가 쌓이고 있는지, 5분으로 확인해보세요.</p>
+        <div class="h-choice-label">지금 바로 시작하기</div>
+        <div class="h-btns">
+          <button class="hbtn hbtn-lsc" onclick="goLSC()">
+            <span>🌿 Life Style Check <span class="hbtn-sub">— 생활습관 전체 진단 (5분)</span></span>
+            <span class="hbtn-arr">→</span>
+          </button>
+        </div>
+        <div style="margin-top:1rem;font-family:'Fraunces',serif;font-size:0.82rem;color:var(--mute);">
+          바로 상담을 원하시면 <button onclick="goKakao()" style="background:none;border:none;color:var(--olive);font-family:'Fraunces',serif;font-size:0.82rem;cursor:pointer;text-decoration:underline;padding:0;">카카오채널로 연결 →</button>
+        </div>
+      </div>
+      <div>
+        <div class="h-panel">
+          <div class="hp-kicker">CareLab이 다른 이유</div>
+          <div class="hp-stats">
+            <div class="hp-stat"><div class="hp-n">30<span>여년</span></div><div class="hp-l">임상 현장 경력</div></div>
+            <div class="hp-stat"><div class="hp-n">조합</div><div class="hp-l">리스크 분석</div></div>
+            <div class="hp-stat"><div class="hp-n">5<span>분</span></div><div class="hp-l">체크 시간</div></div>
+            <div class="hp-stat"><div class="hp-n">무료</div><div class="hp-l">자가진단</div></div>
+          </div>
+          <div class="hp-divider"></div>
+          <div class="hp-quote"><strong>"30년간 수술실에서, 외과에서, 암센터에서 — 아픈 분들 곁에 있었습니다."</strong><br/><br/>수술 전날 밤부터 퇴원 후 삶까지. 병이 생기고 나서야 "이걸 미리 알았더라면" 하는 분들을 너무 많이 봤습니다. 그 아쉬움이 CareLab을 만들었습니다.</div>
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;gap:0.4rem;">
+            <div style="display:flex;align-items:center;gap:0.6rem;font-family:'JetBrains Mono',monospace;font-size:0.54rem;letter-spacing:0.1em;color:rgba(255,255,255,0.4);">
+              <span style="color:#a8b88a;">🎓</span>의료경영 석사(MBA)
+            </div>
+            <div style="display:flex;align-items:center;gap:0.6rem;font-family:'JetBrains Mono',monospace;font-size:0.54rem;letter-spacing:0.1em;color:rgba(255,255,255,0.4);">
+              <span style="color:#a8b88a;">📋</span>건강보험 설계 전문자격 · 보험설계사
+            </div>
+            <div style="display:flex;align-items:center;gap:0.6rem;font-family:'JetBrains Mono',monospace;font-size:0.54rem;letter-spacing:0.1em;color:rgba(255,255,255,0.4);">
+              <span style="color:#a8b88a;">✓</span>광고·제휴·판매 없음 · 임상 근거 기반
+            </div>
+          </div>
+          <div class="hp-trust" style="margin-top:1rem;">
+            <span class="trust-item">✓ 무료 자가진단</span>
+            <span class="trust-item">✓ 개인정보 저장 없음</span>
+            <span class="trust-item">✓ 즉시 결과</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ② LSC 체크 -->
+<div class="page" id="page-lsc">
+  <div class="lsc-page">
+    <div class="lsc-nav">
+      <div class="lsc-nav-logo">CareLab</div>
+      <div class="lsc-pb-wrap">
+        <div class="lsc-pb"><div class="lsc-pb-fill" id="pbFill" style="width:10%"></div></div>
+        <div class="lsc-pb-label" id="pbLabel">0 / 10 완료</div>
+      </div>
+      <button class="lsc-nav-back" onclick="goPage('page-hero')">← 처음으로</button>
+    </div>
+    <div class="lsc-wrap">
+      <div class="lsc-eyebrow">● Life Style Check 진행 중</div>
+      <div class="lsc-card">
+        <div class="tab-menu" id="tabMenu"></div>
+        <div class="tab-content" id="tabContent"></div>
+        <div class="lsc-footer">
+          <div class="prog-dots" id="progDots"></div>
+          <div class="foot-btns">
+            <button class="btn-back" id="btnBack" onclick="prevTab()">← 이전</button>
+            <button class="btn-next" id="btnNext" onclick="nextTab()">다음 <span id="nextLabel"></span> →</button>
+            <button class="btn-result" id="btnResult" style="display:none" onclick="showResult()">결과 보기 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 결과 -->
+<div class="page" id="page-result">
+  <div class="result-page">
+    <div class="result-nav">
+      <div class="result-nav-logo">CareLab</div>
+      <div class="result-nav-date" id="resultDate"></div>
+    </div>
+    <div class="result-wrap">
+      <div class="result-card">
+        <div class="result-head">
+          <div><div class="rh-kicker">Life Style Check 결과</div><div class="rh-title">생활습관 리스크 진단</div></div>
+          <div class="rh-meta" id="resultMeta"></div>
+        </div>
+        <div class="result-body">
+          <div class="section-label">리스크 신호등</div>
+          <div class="signal-cards" id="signalCards"></div>
+          <div class="clinical-box">
+            <div class="cb-kicker">30년 임상 경험에서</div>
+            <div class="cb-text" id="clinicalText"></div>
+          </div>
+          <!-- 생활습관 우선순위 액션 -->
+          <div class="action-section" id="actionSection" style="display:none;">
+            <div class="action-header" onclick="toggleSection('actionBody','actionArrow')" style="cursor:pointer;">
+              <div class="action-kicker">생활습관 우선순위</div>
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <div class="action-note">영양제보다 이게 먼저입니다</div>
+                <span id="actionArrow" style="color:var(--olive);font-size:0.9rem;transition:transform 0.2s;">▼</span>
+              </div>
+            </div>
+            <div id="actionBody">
+              <div class="action-cards" id="actionCards"></div>
+            </div>
+          </div>
+
+          <!-- 영양제 축약 -->
+          <div class="supp-section" id="suppSection" style="display:none;">
+            <div class="supp-header" onclick="toggleSection('suppBody','suppArrow')" style="cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;">
+              <div>
+                <div class="supp-kicker">영양 보충 가이드</div>
+                <div class="supp-title">리스크 맞춤 영양제 제안</div>
+                <div class="supp-note">생활습관 개선과 함께 고려해보세요 — 영양제는 보조 수단입니다</div>
+              </div>
+              <span id="suppArrow" style="color:var(--olive);font-size:0.9rem;margin-top:0.3rem;transition:transform 0.2s;flex-shrink:0;">▼</span>
+            </div>
+            <div id="suppBody" style="display:none;">
+              <div class="supp-warning">⚠️ 영양제는 식이와 생활습관을 대체하지 않습니다. 위 우선순위 실천이 먼저입니다.</div>
+              <div class="supp-cards" id="suppCards"></div>
+              
+            </div>
+          </div>
+
+          <!-- 복용 타임라인 섹션 -->
+          <div class="timeline-section" id="timelineSection" style="display:none;">
+            <div onclick="toggleSection('timelineBody','timelineArrow')" style="cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;">
+              <div>
+                <div class="tl-sec-kicker">복용 타임라인</div>
+                <div class="tl-sec-title">하루 복용 계획</div>
+                <div class="tl-sec-note">현재 복용 중인 것 + 새로 추천하는 것을 함께 정리했습니다</div>
+              </div>
+              <span id="timelineArrow" style="color:var(--olive);font-size:0.9rem;margin-top:0.3rem;transition:transform 0.2s;flex-shrink:0;">▼</span>
+            </div>
+            <div id="timelineBody" style="display:none;">
+              <div class="tl-intro">복용 시간과 순서가 흡수율과 효과에 직접 영향을 줍니다. 이 순서대로 드세요.</div>
+              <div class="tl-blocks" id="timelineBlocks"></div>
+            <div class="tl-legend">
+              <div class="tl-leg-item"><div class="tl-leg-dot" style="background:var(--olive);"></div>추가 권장</div>
+              <div class="tl-leg-item"><div class="tl-leg-dot" style="background:var(--mute);"></div>현재 복용 중</div>
+              <div class="tl-leg-item"><div class="tl-leg-dot" style="background:var(--amber);"></div>주의 확인 필요</div>
+            </div>
+              <div class="tl-warn-note">⚠️ 위 타임라인은 임상 근거 기반 가이드입니다. 개인 건강 상태·복용량에 따라 달라질 수 있으며, 처방약과 함께 드실 경우 반드시 담당 의사와 상담 후 시작하세요.</div>
+            </div>
+          </div>
+
+          <!-- 재정 리스크 각성 섹션 -->
+          <div class="finance-section" id="financeSection" style="display:none;">
+            <div class="finance-kicker">보장 준비 현황 점검</div>
+            <div class="finance-title">건강이 무너지면, 재정도 무너집니다</div>
+            <div class="finance-sub">당신의 리스크를 치료비로 환산하면 — 준비가 되어 있나요?</div>
+            <div class="finance-cards" id="financeCards"></div>
+            <div class="finance-reality" id="financeReality"></div>
+
+            <!-- 보험 공백 3문항 -->
+            <div class="insurance-check">
+              <div class="ic-check-title">내 보험, 이 상황을 감당할 수 있을까요?</div>
+              <div class="ic-check-sub">5가지만 체크해보세요 — 2분이면 됩니다</div>
+              <div style="display:flex;align-items:flex-start;gap:0.6rem;background:rgba(168,184,138,0.1);border:1px solid rgba(168,184,138,0.25);padding:0.75rem 0.9rem;margin-bottom:1rem;">
+                <span style="color:#a8b88a;font-size:0.9rem;flex-shrink:0;margin-top:0.05rem;">✓</span>
+                <div style="font-family:'Fraunces',serif;font-size:0.82rem;color:rgba(245,241,234,0.7);line-height:1.65;">
+                  <strong style="color:#a8b88a;font-weight:500;">보험 가입이 목적이 아닙니다.</strong><br/>
+                  현재 내 보장 상태가 충분한지 확인하는 것이 먼저입니다. 분석 후 가입 여부는 전적으로 본인이 결정합니다. 권유·강요 없습니다.
+                </div>
+              </div>
+              <div class="ic-q-wrap">
+                <div class="ic-q">
+                  <div class="ic-q-label">Q1</div>
+                  <div class="ic-q-text">현재 가입된 보험은? <span style="font-size:0.73rem;color:rgba(255,255,255,0.35);">중복 선택 가능</span></div>
+                  <div class="ic-opts" id="insQ1" style="flex-wrap:wrap;">
+                    <button class="ic-opt" onclick="insQ1Toggle(this,'실손보험','a')">실손보험</button>
+                    <button class="ic-opt" onclick="insQ1Toggle(this,'암보험','g')">암보험</button>
+                    <button class="ic-opt" onclick="insQ1Toggle(this,'종신·정기보험','a')">종신·정기보험</button>
+                    <button class="ic-opt" onclick="insQ1Single(this,'없음','r')">없음</button>
+                    <button class="ic-opt" onclick="insQ1Single(this,'잘 모름','r')">잘 모름</button>
+                  </div>
+                  <div style="margin-top:0.5rem;font-size:0.72rem;color:rgba(255,255,255,0.3);font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;">선택 후 Q2로 넘어가세요</div>
+                </div>
+                <div class="ic-q">
+                  <div class="ic-q-label">Q2</div>
+                  <div class="ic-q-text">암·뇌·심장 진단자금이 얼마나 가입되어 있나요?</div>
+                  <div class="ic-opts" id="insQ2">
+                    <button class="ic-opt" onclick="insClick(1,0,'없음','r')">없음</button>
+                    <button class="ic-opt" onclick="insClick(1,1,'1천만원 미만','r')">1천만원 미만</button>
+                    <button class="ic-opt" onclick="insClick(1,2,'1천~3천만원','a')">1천~3천만원</button>
+                    <button class="ic-opt" onclick="insClick(1,3,'3천만원 이상','g')">3천만원 이상</button>
+                    <button class="ic-opt" onclick="insClick(1,4,'모름','r')">모름</button>
+                  </div>
+                </div>
+                <div class="ic-q">
+                  <div class="ic-q-label">Q3</div>
+                  <div class="ic-q-text">실손보험 가입 시기는?</div>
+                  <div class="ic-opts" id="insQ3">
+                    <button class="ic-opt" onclick="insClick(2,0,'2009년 이전','r')">2009년 이전</button>
+                    <button class="ic-opt" onclick="insClick(2,1,'2010~2017년','a')">2010~2017년</button>
+                    <button class="ic-opt" onclick="insClick(2,2,'2018년 이후','g')">2018년 이후</button>
+                    <button class="ic-opt" onclick="insClick(2,3,'실손 없음','r')">실손 없음</button>
+                    <button class="ic-opt" onclick="insClick(2,4,'모름','a')">모름</button>
+                  </div>
+                </div>
+                <div class="ic-q">
+                  <div class="ic-q-label">Q4</div>
+                  <div class="ic-q-text">가장 최근 보험 가입·갱신 연도는? <span style="font-size:0.73rem;color:rgba(255,255,255,0.35);">리뉴얼 포함</span></div>
+                  <div class="ic-opts" id="insQ4">
+                    <button class="ic-opt" onclick="insClick(3,0,'2020년 이후','g')">2020년 이후</button>
+                    <button class="ic-opt" onclick="insClick(3,1,'2015~2019년','a')">2015~2019년</button>
+                    <button class="ic-opt" onclick="insClick(3,2,'2010~2014년','a')">2010~2014년</button>
+                    <button class="ic-opt" onclick="insClick(3,3,'2009년 이전','r')">2009년 이전</button>
+                    <button class="ic-opt" onclick="insClick(3,4,'모름','a')">모름</button>
+                  </div>
+                </div>
+                <div class="ic-q">
+                  <div class="ic-q-label">Q5</div>
+                  <div class="ic-q-text">갑자기 일을 못하게 되면 생활비를 감당할 수 있나요?</div>
+                  <div class="ic-opts" id="insQ5">
+                    <button class="ic-opt" onclick="insClick(4,0,'6개월 이상 가능','g')">6개월 이상 가능</button>
+                    <button class="ic-opt" onclick="insClick(4,1,'3개월 정도','a')">3개월 정도</button>
+                    <button class="ic-opt" onclick="insClick(4,2,'1개월도 힘듦','r')">1개월도 힘듦</button>
+                  </div>
+                </div>
+              </div>
+              <div class="insurance-result" id="insuranceResult">
+                <div class="ir-signal">
+                  <div class="ir-light" id="irLight"></div>
+                  <div class="ir-label" id="irLabel"></div>
+                </div>
+                <div class="ir-desc" id="irDesc"></div>
+                <button class="ir-cta" id="irCta" onclick="goKakao()">
+                  <span id="irCtaText">보험 공백 무료 분석 신청</span><span>→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="options-wrap">
+            <div class="options-label">다음 단계 선택</div>
+            <div class="options-grid" style="grid-template-columns:1fr 1fr;gap:1rem;">
+              <div class="opt opt-a" onclick="openReportModal()" style="padding:1.5rem 1.3rem;cursor:pointer;">
+                <div class="opt-label">OPTION A</div>
+                <div class="opt-title">📝 나만을 위한 건강 분석 리포트</div>
+                <div class="opt-desc" style="margin-top:0.5rem;">생활습관 체크 결과를 바탕으로, 지금 내 몸에 어떤 리스크가 쌓이고 있는지 — 30년 경험의 시선으로 직접 작성해 카카오로 보내드립니다.</div>
+              </div>
+              <div class="opt opt-c" onclick="goKakao()" style="padding:1.5rem 1.3rem;">
+                <div class="opt-label">OPTION B</div>
+                <div class="opt-title">🛡 건강·재정 통합 상담</div>
+                <div class="opt-desc" id="optBDesc" style="margin-top:0.5rem;">월 1회 생활습관 점검 + 보험 공백 진단.<br/>갑작스러운 질병에 건강도, 재정도 흔들리지 않도록 — 지속 관리형.</div>
+                <div style="margin-top:1rem;padding-top:0.8rem;border-top:1px solid var(--line);font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;color:var(--mute);">✓ 월 1회 정기 점검 · 보험 공백 진단 · 가입 강요 없음 · 카카오 연결</div>
+              </div>
+            </div>
+            <!-- PDF 저장 버튼 -->
+            <div class="pdf-btn-wrap" style="margin-top:1.2rem;display:flex;justify-content:flex-end;">
+              <button onclick="window.print()"
+                style="display:flex;align-items:center;gap:0.6rem;background:none;border:1px solid var(--line);padding:0.6rem 1.2rem;font-family:'Fraunces',serif;font-size:0.82rem;color:var(--mute);cursor:pointer;transition:all 0.2s;"
+                onmouseover="this.style.borderColor='var(--olive)';this.style.color='var(--olive)';"
+                onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--mute)';">
+                <span>🖨️</span>
+                <span>PDF로 저장 · 인쇄</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 대표소개 + 컨설팅 CTA -->
+        <div style="background:var(--ink);padding:2rem;margin-top:0;">
+          <div style="display:flex;align-items:flex-start;gap:1.5rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);">
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(168,184,138,0.15);border:1.5px solid #a8b88a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span style="font-family:'Fraunces',serif;font-size:1.3rem;font-style:italic;color:#a8b88a;">C</span>
+            </div>
+            <div style="flex:1;">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.25em;color:#a8b88a;margin-bottom:0.3rem;">CareLab 대표 · Care Advisor</div>
+              <div style="font-family:'Fraunces',serif;font-size:1rem;color:#f5f1ea;margin-bottom:0.5rem;">건강 컨설턴트</div>
+              <div style="display:flex;flex-direction:column;gap:0.3rem;">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:0.54rem;letter-spacing:0.1em;color:rgba(255,255,255,0.38);">🏥 30년 임상 경험 · 수술실·외과·암센터·소화기내과 등</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:0.54rem;letter-spacing:0.1em;color:rgba(255,255,255,0.38);">🎓 의료경영 석사(MBA) · 건강보험 설계 전문자격</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:0.54rem;letter-spacing:0.1em;color:rgba(255,255,255,0.38);">✓ 광고·제휴·판매 없음 · 임상 근거 기반 운영</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-family:'Fraunces',serif;font-size:0.9rem;color:rgba(245,241,234,0.65);line-height:1.75;margin-bottom:1.4rem;">
+            결과를 보셨다면, 이제 다음 단계를 함께 고민해드릴 수 있습니다.<br/>
+            30년 임상 경험과 보험 설계 전문 지식을 바탕으로 — 생활습관부터 재정적 대비까지.
+          </div>
+          <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+            <button onclick="goKakao()" style="flex:1;min-width:160px;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;background:#a8b88a;color:var(--ink);padding:0.9rem 1.2rem;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:700;">
+              <span>💬 1:1 상담 신청 (카카오)</span><span>→</span>
+            </button>
+            <a href="https://blog.naver.com/carelab365" target="_blank" rel="noopener" style="flex:1;min-width:160px;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;background:rgba(255,255,255,0.06);color:rgba(245,241,234,0.75);padding:0.9rem 1.2rem;text-decoration:none;font-family:'Inter',sans-serif;font-size:0.85rem;">
+              <span>📝 carelab365 블로그</span><span style="color:#a8b88a;">↗</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="result-footer">
+          <button class="btn-restart" onclick="restart()">← 처음부터 다시하기</button>
+          <div class="result-share">carelab.co.kr</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 리포트 신청 모달 ══ -->
+<div class="report-modal-overlay" id="modal-report" onclick="closeReportModal(event)">
+  <div class="report-modal" onclick="event.stopPropagation()">
+    <div class="rm-head">
+      <div>
+        <div class="rm-head-title">📝 나만을 위한 건강 분석 리포트</div>
+        <div class="rm-head-sub">영양제 점검 · 상호작용 분석 · 생활습관 가이드 · 48시간 내 발송</div>
+      </div>
+      <button class="rm-close" onclick="document.getElementById('modal-report').classList.remove('open')">✕</button>
+    </div>
+
+    <!-- 입력 폼 -->
+    <div class="rm-body" id="rmForm">
+      <div class="rm-preview">
+        <div class="rm-preview-title">함께 전달되는 내용</div>
+        <div class="rm-preview-items" id="rmPreviewItems"></div>
+      </div>
+      <div class="rm-input-wrap">
+        <label class="rm-input-label">이름 (선택)</label>
+        <input class="rm-input" type="text" id="rmName" placeholder="홍길동"/>
+      </div>
+      <div class="rm-input-wrap">
+        <label class="rm-input-label">이메일 주소 *</label>
+        <input class="rm-input" type="email" id="rmEmail" placeholder="example@email.com"/>
+      </div>
+      <button class="rm-submit" id="rmSubmitBtn" onclick="submitReport()">
+        <span>리포트 신청하기</span><span>→</span>
+      </button>
+      <div class="rm-notice">
+        ✓ 개인정보는 리포트 발송 목적으로만 사용됩니다<br/>
+        ✓ 48시간 내 이메일로 발송 · 보험 가입 강요 없음
+      </div>
+    </div>
+
+    <!-- 완료 메시지 -->
+    <div class="rm-success" id="rmSuccess">
+      <div class="rm-success-icon">✅</div>
+      <div class="rm-success-title">신청이 완료되었습니다</div>
+      <div class="rm-success-desc">
+        48시간 내에 맞춤 건강 분석 리포트를 보내드립니다.<br/>
+        스팸함도 확인해 주세요.<br/><br/>
+        <span style="color:var(--olive);font-style:italic;">30년 경험의 시선으로 정성껏 작성해드리겠습니다.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 모달: 대표 소개 ══ -->
+<div class="modal-overlay" id="modal-about" onclick="closeModal('modal-about',event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div><div class="modal-head-kicker">FOUNDER</div><div class="modal-head-title">대표 소개</div></div>
+      <button class="modal-close" onclick="closeModal('modal-about')">✕</button>
+    </div>
+    <div class="modal-profile-head">
+      <div class="modal-avatar"><span style="font-family:'Fraunces',serif;font-size:1.5rem;font-style:italic;color:#a8b88a;">C</span></div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.25em;color:#a8b88a;margin-bottom:0.3rem;">CareLab 대표 · Care Advisor</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.1rem;color:#f5f1ea;margin-bottom:0.3rem;">건강 컨설턴트</div>
+        <div style="font-family:'Fraunces',serif;font-size:0.82rem;color:rgba(245,241,234,0.55);line-height:1.6;">30년 임상 경험 · 의료경영 석사 · 건강보험 설계 전문<br/>의료·건강 교육 강사</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div style="font-family:'Fraunces',serif;font-size:0.92rem;color:var(--ink);line-height:1.9;margin-bottom:1.4rem;padding-bottom:1.2rem;border-bottom:1px dashed var(--line);">
+        안녕하세요. CareLab을 운영하는 건강 컨설턴트입니다.<br/><br/>
+        30년간 암 병동과 임상 현장에서 환자분들 곁에 있으면서, 많은 분들이 <strong>좋은 정보를 몰라서</strong>, 혹은 <strong>잘못된 정보 때문에</strong> 고통받는 것을 지켜봤습니다.<br/><br/>
+        영양제 하나도, 보험 하나도 — <em style="color:var(--olive);">정확한 정보를 바탕으로</em> 결정해야 합니다. 그 판단을 돕기 위해 이 사이트를 만들었습니다.
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;color:var(--olive);margin-bottom:0.9rem;">주요 이력</div>
+      <div class="modal-career">
+        <div class="modal-career-item"><span style="font-size:1.1rem;flex-shrink:0;">🏥</span><div><div class="modal-career-label">임상 경력</div><div class="modal-career-val">30년 임상 경험 · 수술실·외과·암센터·소화기내과 등 다양한 임상 현장 경험</div></div></div>
+        <div class="modal-career-item"><span style="font-size:1.1rem;flex-shrink:0;">🎓</span><div><div class="modal-career-label">학력·자격</div><div class="modal-career-val">의료경영 석사(MBA) · 건강보험 설계 전문자격</div></div></div>
+        <div class="modal-career-item"><span style="font-size:1.1rem;flex-shrink:0;">🩺</span><div><div class="modal-career-label">전문 분야</div><div class="modal-career-val">생활습관 리스크 상담 · 항암 치료 전·중·후 영양 관리</div></div></div>
+        <div class="modal-career-item"><span style="font-size:1.1rem;flex-shrink:0;">📋</span><div><div class="modal-career-label">보험 전문</div><div class="modal-career-val">건강보험 분석 및 설계 · 보장 공백 컨설팅</div></div></div>
+        <div class="modal-career-item"><span style="font-size:1.1rem;flex-shrink:0;">🎙️</span><div><div class="modal-career-label">강의·교육</div><div class="modal-career-val">의료기관·기업 대상 건강 관리 교육 강사 · 영양·예방 의학 강연</div></div></div>
+      </div>
+      <div class="modal-principle">
+        <div class="modal-principle-kicker">운영 원칙</div>
+        <div class="modal-principle-item"><span>✓</span>광고·제휴·판매 없음 — 특정 제품·브랜드를 추천하지 않습니다</div>
+        <div class="modal-principle-item"><span>✓</span>임상 근거 기반 — 검증된 연구와 가이드라인만 참고합니다</div>
+        <div class="modal-principle-item"><span>✓</span>안전 우선 — '추천'보다 '비추천'에 더 엄격합니다</div>
+        <div class="modal-principle-item"><span>✓</span>중립적 정보 제공 — 의학적 진단·처방을 대체하지 않습니다</div>
+      </div>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:1.2rem;">
+        <a href="https://blog.naver.com/carelab365" target="_blank" rel="noopener" style="flex:1;min-width:140px;display:flex;align-items:center;justify-content:space-between;padding:0.85rem 1.1rem;background:var(--ink);color:var(--cream);text-decoration:none;font-family:'Inter',sans-serif;font-size:0.85rem;font-weight:600;">
+          <span>📝 carelab365 블로그</span><span style="color:#a8b88a;">↗</span>
+        </a>
+        <button onclick="goKakao();closeModal('modal-about')" style="flex:1;min-width:140px;display:flex;align-items:center;justify-content:space-between;padding:0.85rem 1.1rem;background:#a8b88a;color:var(--ink);border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:0.85rem;font-weight:700;">
+          <span>💬 1:1 상담 신청</span><span>→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 모달: 이용약관 ══ -->
+<div class="modal-overlay" id="modal-terms" onclick="closeModal('modal-terms',event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div><div class="modal-head-kicker">LEGAL</div><div class="modal-head-title">이용약관</div></div>
+      <button class="modal-close" onclick="closeModal('modal-terms')">✕</button>
+    </div>
+    <div class="modal-body">
+      <h4>제1조 목적</h4>
+      <p>본 약관은 CareLab(이하 "서비스")이 제공하는 생활습관 리스크 체크 및 건강 정보 서비스의 이용 조건과 절차에 관한 사항을 규정합니다.</p>
+      <h4>제2조 서비스의 성격</h4>
+      <p>본 서비스는 30년 임상 경험을 바탕으로 한 건강 정보 제공 서비스로, 의료법에 따른 의료 행위(진단·처방·치료)를 대체하지 않습니다. 제공되는 모든 정보는 참고용이며, 건강 관련 최종 결정은 담당 의료진과 상담 후 이루어져야 합니다.</p>
+      <h4>제3조 서비스 이용</h4>
+      <ul>
+        <li>서비스는 만 14세 이상 누구나 무료로 이용 가능합니다.</li>
+        <li>사용자가 입력한 정보는 서버에 저장되지 않으며, 브라우저 세션 내에서만 사용됩니다.</li>
+        <li>서비스는 비상업적 건강 정보 제공 목적으로 운영되며, 특정 제품·브랜드를 광고하지 않습니다.</li>
+      </ul>
+      <h4>제4조 금지 행위</h4>
+      <ul>
+        <li>서비스 콘텐츠의 무단 복제·배포·상업적 이용</li>
+        <li>허위 정보 입력을 통한 결과 왜곡</li>
+        <li>서비스 시스템에 대한 부정한 접근 시도</li>
+      </ul>
+      <h4>제5조 면책</h4>
+      <p>서비스 제공자는 본 서비스의 정보를 바탕으로 한 이용자의 건강·재정 관련 결정 결과에 대해 법적 책임을 지지 않습니다. 시스템 장애·천재지변 등 불가항력 사유로 인한 서비스 중단에 대해 책임을 지지 않습니다.</p>
+      <h4>제6조 약관 변경</h4>
+      <p>약관은 법령 또는 서비스 운영 정책 변경 시 수정될 수 있으며, 변경 사항은 서비스 내 공지로 안내합니다.</p>
+      <p style="color:var(--mute);font-size:0.78rem;">시행일: 2026년 5월 1일</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 모달: 개인정보 처리방침 ══ -->
+<div class="modal-overlay" id="modal-privacy" onclick="closeModal('modal-privacy',event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div><div class="modal-head-kicker">LEGAL</div><div class="modal-head-title">개인정보 처리방침</div></div>
+      <button class="modal-close" onclick="closeModal('modal-privacy')">✕</button>
+    </div>
+    <div class="modal-body">
+      <h4>1. 수집하는 개인정보</h4>
+      <p>본 서비스는 별도의 회원가입 없이 이용 가능합니다. Life Style Check 입력 정보(가족력, 식생활, 운동 등)는 <strong>서버에 저장되지 않으며</strong> 브라우저 세션 내에서만 사용 후 즉시 소멸합니다.</p>
+      <h4>2. 개인정보 미수집 원칙</h4>
+      <ul>
+        <li>이름, 생년월일, 연락처, 이메일 등 식별 정보를 수집하지 않습니다.</li>
+        <li>입력된 건강 정보는 외부 서버로 전송되지 않습니다.</li>
+        <li>쿠키는 서비스 운영에 필요한 최소한의 세션 정보만 사용합니다.</li>
+      </ul>
+      <h4>3. 1:1 상담 신청 시</h4>
+      <p>카카오채널을 통한 상담 신청 시, 카카오 플랫폼의 개인정보 처리방침이 별도로 적용됩니다. 상담 과정에서 자발적으로 제공하신 정보는 상담 목적으로만 사용되며, 제3자에게 제공되지 않습니다.</p>
+      <h4>4. 분석 도구 사용</h4>
+      <p>서비스 개선을 위해 Google Analytics를 사용할 수 있으며, 이는 익명화된 방문 통계만 수집합니다. 개인을 특정할 수 있는 정보는 수집하지 않습니다.</p>
+      <h4>5. 정보 주체의 권리</h4>
+      <p>서비스 특성상 개인정보를 저장하지 않으므로 별도의 열람·삭제 요청이 필요하지 않습니다. 상담 관련 문의는 카카오채널을 통해 요청하실 수 있습니다.</p>
+      <p style="color:var(--mute);font-size:0.78rem;">시행일: 2026년 5월 1일</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 모달: 면책조항 ══ -->
+<div class="modal-overlay" id="modal-disclaimer" onclick="closeModal('modal-disclaimer',event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div><div class="modal-head-kicker">LEGAL</div><div class="modal-head-title">면책조항</div></div>
+      <button class="modal-close" onclick="closeModal('modal-disclaimer')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(192,57,43,0.06);border-left:3px solid var(--red);padding:0.9rem 1.1rem;margin-bottom:1.2rem;font-family:'Fraunces',serif;font-size:0.88rem;color:#a32820;line-height:1.7;">
+        ⚠️ 본 서비스는 의료법에 따른 의료 행위를 제공하지 않습니다. 진단·처방·치료는 반드시 의료 전문가에게 받으시기 바랍니다.
+      </div>
+      <h4>건강 정보의 한계</h4>
+      <p>Life Style Check 결과는 입력하신 정보를 바탕으로 한 일반적인 건강 정보 안내입니다. 개인의 정확한 건강 상태는 전문 의료 기관의 검진을 통해서만 확인할 수 있습니다.</p>
+      <h4>영양제 정보</h4>
+      <p>제안되는 영양제 정보는 일반적인 임상 근거를 바탕으로 하며, 개인의 기저질환·복용 약물·알레르기 등에 따라 적합하지 않을 수 있습니다. 영양제 복용 전 담당 의사 또는 약사와 상담하시기 바랍니다.</p>
+      <h4>보험 정보</h4>
+      <p>보험 관련 정보는 일반적인 안내 목적이며, 실제 보험 계약 및 보장 내용은 보험사 약관 및 설계사와의 상담을 통해 확인하시기 바랍니다.</p>
+      <h4>응급 상황</h4>
+      <p>흉통·호흡 곤란·의식 저하 등 응급 증상이 있는 경우, 즉시 119에 신고하거나 응급실을 방문하시기 바랍니다. 본 서비스는 응급 상황에 대응하지 않습니다.</p>
+      <h4>책임의 한계</h4>
+      <p>서비스 제공자는 본 서비스 이용으로 인한 직접적·간접적 손해에 대해 법적 책임을 지지 않습니다. 서비스 내 정보의 정확성·완전성·최신성을 보장하지 않으며, 이용자의 판단과 책임 하에 활용하시기 바랍니다.</p>
+      <p style="color:var(--mute);font-size:0.78rem;">시행일: 2026년 5월 1일</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 사이트 푸터 ══ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-top" style="grid-template-columns:1.6fr 1fr;gap:4rem;">
+
+      <!-- 브랜드 -->
+      <div class="footer-brand">
+        <div class="fb-logo">CareLab</div>
+        <p class="fb-desc">
+          30년간 수술실·외과·암센터에서 아픈 분들 곁에 있었습니다.<br/>
+          병이 생기기 전에 알았더라면 — 그 아쉬움으로 만든 서비스입니다.
+        </p>
+        <!-- 소셜 링크 -->
+        <div style="display:flex;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap;">
+          <a href="https://instagram.com/carelab365" target="_blank" rel="noopener"
+             style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0.75rem;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.55);text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;transition:all 0.2s;"
+             onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='rgba(255,255,255,0.85)'"
+             onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='rgba(255,255,255,0.55)'">
+            ◈ Instagram
+          </a>
+          <a href="https://blog.naver.com/carelab365" target="_blank" rel="noopener"
+             style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0.75rem;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.55);text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;transition:all 0.2s;"
+             onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='rgba(255,255,255,0.85)'"
+             onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='rgba(255,255,255,0.55)'">
+            ❋ 블로그
+          </a>
+          <a href="http://pf.kakao.com/_hxlDTX" target="_blank" rel="noopener"
+             style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0.75rem;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.55);text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;transition:all 0.2s;"
+             onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='rgba(255,255,255,0.85)'"
+             onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='rgba(255,255,255,0.55)'">
+            ◎ 카카오채널
+          </a>
+        </div>
+        <a href="https://blog.naver.com/carelab365" target="_blank" rel="noopener" class="fb-blog">
+          <span class="fb-blog-icon">❋</span>
+          <div class="fb-blog-text">
+            <div class="fb-blog-name">carelab365 블로그</div>
+            <div class="fb-blog-sub">30년간 암 환자분들 곁에서 쌓은 건강 이야기</div>
+          </div>
+          <span class="fb-blog-arr">↗</span>
+        </a>
+      </div>
+
+      <!-- 링크 통합 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+        <div class="footer-col">
+          <div class="fc-label">바로가기</div>
+          <div class="fc-links">
+            <button class="fc-link" onclick="goLSC()">🌿 Life Style Check</button>
+            <button class="fc-link" onclick="goKakao()">💬 카카오 채팅 상담</button>
+            <button class="fc-link" onclick="openModal('modal-about')">대표 소개</button>
+          </div>
+        </div>
+        <div class="footer-col">
+          <div class="fc-label">약관·정책</div>
+          <div class="fc-links">
+            <button class="fc-link" onclick="openModal('modal-terms')">이용약관</button>
+            <button class="fc-link" onclick="openModal('modal-privacy')">개인정보 처리방침</button>
+            <button class="fc-link" onclick="openModal('modal-disclaimer')">면책조항</button>
+          </div>
+          <div style="margin-top:1.2rem;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.5rem;letter-spacing:0.08em;color:rgba(255,255,255,0.2);line-height:1.7;">
+              본 서비스는 의료 진단·처방을 대체하지 않으며<br/>건강 정보 제공 목적으로만 운영됩니다.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="footer-bottom">
+      <div class="fb-copy">© 2026 CareLab · carelab365</div>
+      <div class="fb-note">Made with care · Not a medical device</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ─── 탭 정의 ─── */
+const TABS = [
+  { name:'기본정보', step:'00', title:'기본 <em>신체 정보</em>를 입력해주세요', sub:'나이·성별·체형 정보는 리스크 계산의 기초 변수입니다. 선택사항이지만 입력할수록 결과가 정확해집니다.',
+    fields:[], isBasic:true
+  },
+  { name:'가족력', step:'01', title:'가족 중 <em>특정 질환</em>이 있었나요?', sub:'직계가족(부모·형제자매)의 진단 이력입니다. 유전적 소인은 리스크 계산의 핵심 변수입니다.',
+    fields:[
+      { label:'암 계열', chips:[
+        {v:'대장암',warn:true},{v:'위암',warn:true},{v:'유방암',warn:true},{v:'폐암',warn:true},
+        {v:'간암',warn:true},{v:'자궁·난소암',warn:true},{v:'전립선암',warn:true},{v:'기타암',label:'기타 암',warn:true}
+      ]},
+      { label:'심혈관 계열', chips:[
+        {v:'가족력고혈압',label:'고혈압',warn:true},{v:'가족력심장',label:'심장질환·협심증',warn:true},
+        {v:'가족력뇌졸중',label:'뇌졸중·중풍',warn:true},{v:'가족력고지혈증',label:'고지혈증',warn:true}
+      ]},
+      { label:'대사·내분비 계열', chips:[
+        {v:'가족력당뇨',label:'당뇨',warn:true},{v:'가족력갑상선',label:'갑상선 질환',warn:true},
+        {v:'가족력비만',label:'비만',warn:true}
+      ]},
+      { label:'신경·정신 계열', chips:[
+        {v:'가족력치매',label:'치매·파킨슨',warn:true},{v:'가족력우울',label:'우울증·정신질환',warn:true}
+      ]},
+      { label:'기타', chips:[
+        {v:'가족력골다공증',label:'골다공증',warn:true},{v:'가족력자가면역',label:'자가면역질환',warn:true},{v:'가족력신장',label:'신장 질환',warn:true}
+      ]},
+      { label:'해당사항', chips:[{v:'가족력없음',label:'해당 없음',green:true,exclusive:true},{v:'가족력모름',label:'잘 모름',exclusive:true}]}
+    ]
+  },
+  { name:'식생활', step:'02', title:'평소 <em>식생활</em>은 어떤가요?', sub:'식이 패턴은 암·심혈관 위험도와 직접 연결됩니다. 해당되는 것을 모두 선택해주세요.',
+    alert:'가족력 탭에서 암 계열이 선택되었습니다. 식이 패턴이 리스크 계산에 중요하게 반영됩니다.',
+    fields:[
+      { label:'주식 패턴', chips:[
+        {v:'육류중심',label:'육류 중심 (주 4회↑)',warn:true,single:true},{v:'생선자주',label:'생선 자주 먹음',green:true,single:true},
+        {v:'채식위주',label:'채식 위주',green:true,single:true},{v:'골고루',label:'골고루',green:true,single:true}
+      ]},
+      { label:'문제 식습관 (해당되는 것)', chips:[
+        {v:'가공식품',label:'가공식품·패스트푸드 자주',warn:true},{v:'채소부족',label:'채소·과일 거의 안 먹음',warn:true},
+        {v:'짜게',label:'짜게 먹는 편',warn:true},{v:'불규칙',label:'불규칙한 식사',warn:true},{v:'야식',label:'야식 습관',warn:true},{v:'폭식',label:'폭식 습관',warn:true},{v:'소식',label:'소식 (식사량 매우 적음)',warn:true},
+        {v:'식습관양호',label:'해당 없음',green:true,exclusive:true}
+      ]},
+      { label:'하루 물 섭취', chips:[
+        {v:'물부족',label:'1L 미만',warn:true,single:true},{v:'물보통',label:'1~2L',green:true,single:true},{v:'물충분',label:'2L 이상',green:true,single:true}
+      ]}
+    ]
+  },
+  { name:'운동', step:'03', title:'평소 <em>운동</em> 습관은 어떤가요?', sub:'운동 부족은 심혈관·대사 리스크와 직결됩니다.',
+    fields:[
+      { label:'주간 운동 횟수', chips:[
+        {v:'운동안함',label:'거의 안 함',warn:true,single:true},{v:'주1-2회',label:'주 1~2회',warn:true,single:true},
+        {v:'주3-4회',label:'주 3~4회',green:true,single:true},{v:'주5회이상',label:'주 5회 이상',green:true,single:true}
+      ]},
+      { label:'주된 운동 종류', chips:[
+        {v:'걷기',label:'걷기·조깅',green:true},{v:'근력운동',label:'근력 운동',green:true},{v:'수영',label:'수영·자전거',green:true},
+        {v:'요가',label:'요가·스트레칭',green:true},{v:'운동종류없음',label:'운동 안 함',warn:true,exclusive:true}
+      ]},
+      { label:'하루 앉아있는 시간', chips:[
+        {v:'좌식4h미만',label:'4시간 미만',green:true,single:true},{v:'좌식4-8h',label:'4~8시간',single:true},{v:'좌식8h이상',label:'8시간 이상',warn:true,single:true}
+      ]}
+    ]
+  },
+  { name:'수면', step:'04', title:'평소 <em>수면</em> 상태는 어떤가요?', sub:'수면의 질과 양은 면역 기능과 암 예방에 직접 영향을 줍니다.',
+    fields:[
+      { label:'하루 평균 수면 시간', chips:[
+        {v:'수면5h미만',label:'5시간 미만',warn:true,single:true},{v:'수면5-6h',label:'5~6시간',warn:true,single:true},
+        {v:'수면7-8h',label:'7~8시간',green:true,single:true},{v:'수면9h이상',label:'9시간 이상',single:true}
+      ]},
+      { label:'수면의 질', chips:[
+        {v:'수면질나쁨',label:'자주 깨거나 불면증',warn:true,single:true},{v:'수면질보통',label:'보통',single:true},{v:'수면질좋음',label:'숙면하는 편',green:true,single:true}
+      ]},
+      { label:'수면 관련 문제', chips:[
+        {v:'코골이',label:'코골이·수면무호흡',warn:true},{v:'수면제복용',label:'수면제·수면 보조제 복용',warn:true},
+        {v:'야근교대',label:'야근·교대근무',warn:true},{v:'수면문제없음',label:'해당 없음',green:true,exclusive:true}
+      ]}
+    ]
+  },
+  { name:'스트레스', step:'05', title:'일상적인 <em>스트레스</em> 수준은?', sub:'만성 스트레스는 면역 체계를 약화시켜 질병 리스크를 높입니다.',
+    fields:[
+      { label:'스트레스 수준', chips:[
+        {v:'스트레스매우높음',label:'매우 높음 (항상 긴장)',warn:true,single:true},{v:'스트레스높음',label:'높음 (자주 스트레스)',warn:true,single:true},
+        {v:'스트레스보통',label:'보통',single:true},{v:'스트레스낮음',label:'낮음 (잘 관리됨)',green:true,single:true}
+      ]},
+      { label:'스트레스 해소 방법', chips:[
+        {v:'운동해소',label:'운동·신체활동',green:true},{v:'취미해소',label:'취미·여가',green:true},
+        {v:'음주해소',label:'음주',warn:true},{v:'폭식해소',label:'폭식',warn:true},{v:'방법없음',label:'뚜렷한 방법 없음',warn:true}
+      ]}
+    ]
+  },
+  { name:'음주·흡연', step:'06', title:'<em>음주</em>와 <em>흡연</em> 습관은?', sub:'암 발생의 주요 위험 요인입니다.',
+    fields:[
+      { label:'흡연', chips:[
+        {v:'현재흡연',label:'현재 흡연 중',warn:true,single:true},{v:'과거흡연',label:'과거 흡연 (금연 중)',warn:true,single:true},{v:'비흡연',label:'비흡연',green:true,single:true}
+      ]},
+      { label:'음주 빈도', chips:[
+        {v:'음주거의매일',label:'거의 매일',warn:true,single:true},{v:'음주주3-4회',label:'주 3~4회',warn:true,single:true},
+        {v:'음주주1-2회',label:'주 1~2회',single:true},{v:'음주월1-2회',label:'월 1~2회 이하',green:true,single:true},{v:'음주안함',label:'거의 안 마심',green:true,single:true}
+      ]},
+      { label:'음주량 (1회 평균)', chips:[
+        {v:'폭음',label:'폭음 (소주 1병↑)',warn:true,single:true},{v:'과음',label:'과음 (소주 반병 이상)',warn:true,single:true},
+        {v:'적당음주',label:'적당히 (1~2잔)',single:true},{v:'음주없음',label:'해당 없음',green:true,single:true}
+      ]}
+    ]
+  },
+  { name:'만성질환', step:'07', title:'진단받은 <em>만성질환</em>이 있나요?', sub:'기존 질환은 리스크 조합 계산에 핵심 변수입니다. 복용약·영양제 상호작용 확인에도 필요합니다.',
+    fields:[
+      { label:'대사·심혈관', chips:[
+        {v:'고혈압진단',label:'고혈압',warn:true},{v:'당뇨진단',label:'당뇨',warn:true},
+        {v:'고지혈증진단',label:'고지혈증',warn:true},{v:'비만',label:'비만 (BMI 30↑)',warn:true},
+        {v:'심장질환진단',label:'심장 질환·협심증',warn:true},{v:'뇌혈관질환',label:'뇌혈관 질환',warn:true}
+      ]},
+      { label:'소화기·간', chips:[
+        {v:'위장질환',label:'위염·역류성 식도염',warn:true},{v:'과민성대장',label:'과민성 대장 증후군',warn:true},
+        {v:'간질환',label:'지방간·간염',warn:true},{v:'췌장질환',label:'췌장 질환',warn:true}
+      ]},
+      { label:'내분비·근골격', chips:[
+        {v:'갑상선진단',label:'갑상선 질환',warn:true},{v:'골다공증진단',label:'골다공증',warn:true},
+        {v:'관절염진단',label:'관절염·류마티스',warn:true},{v:'신장질환',label:'신장 질환',warn:true}
+      ]},
+      { label:'기타', chips:[
+        {v:'이전암치료',label:'이전 암 치료 이력',warn:true},{v:'자가면역질환진단',label:'자가면역질환',warn:true},
+        {v:'정신건강진단',label:'우울증·불안장애',warn:true},
+        {v:'기저질환없음',label:'해당 없음',green:true,exclusive:true}
+      ]}
+    ]
+  },
+  { name:'복용약', step:'08', title:'현재 <em>복용 중인 약</em>이 있나요?', sub:'영양제 상호작용 및 주의사항 확인에 필요합니다.',
+    fields:[
+      { label:'처방약 (해당되는 것)', chips:[
+        {v:'고혈압약',label:'고혈압약'},{v:'당뇨약',label:'당뇨약·인슐린'},
+        {v:'고지혈증약',label:'고지혈증약 (스타틴)'},{v:'항응고제',label:'항응고제 (와파린·아스피린)'},
+        {v:'갑상선약',label:'갑상선 약'},{v:'골다공증약',label:'골다공증약 (비스포스포네이트)'},
+        {v:'정신과약',label:'항우울제·수면제·항불안제'},{v:'호르몬제',label:'호르몬제 (피임약·갱년기)'},
+        {v:'진통제상시',label:'진통소염제 상시 복용'},{v:'항암치료',label:'항암 치료 중',warn:true},
+        {v:'기타약',label:'기타 처방약'},{v:'복용약없음',label:'복용약 없음',green:true,exclusive:true}
+      ]}
+    ]
+  },
+  { name:'영양제', step:'09', title:'현재 <em>복용 중인 영양제</em>는?', sub:'중복·과잉 복용 및 약물 상호작용 확인에 활용됩니다.',
+    fields:[
+      { label:'현재 복용 영양제 (해당되는 것)', chips:[
+        {v:'종합비타민',label:'종합비타민'},{v:'오메가3',label:'오메가-3'},
+        {v:'유산균',label:'유산균·프로바이오틱스'},{v:'비타민D',label:'비타민 D'},
+        {v:'비타민C',label:'비타민 C'},{v:'마그네슘',label:'마그네슘'},
+        {v:'코엔자임Q10',label:'코엔자임 Q10'},{v:'루테인',label:'루테인·지아잔틴'},
+        {v:'철분',label:'철분'},{v:'칼슘',label:'칼슘'},
+        {v:'밀크시슬',label:'밀크시슬 (간 건강)'},{v:'홍삼인삼',label:'홍삼·인삼류'},
+        {v:'콜라겐',label:'콜라겐·히알루론산'},{v:'기타영양제',label:'기타'},
+        {v:'영양제없음',label:'복용 없음',green:true,exclusive:true}
+      ]}
+    ]
+  },
+  { name:'현재 증상', step:'10', title:'최근 <em>불편한 증상</em>이 있나요?', sub:'지속되는 증상은 조기 진단의 단서가 됩니다. 해당되는 것을 모두 선택해 주세요.',
+    fields:[
+      { label:'소화기', chips:[
+        {v:'배변변화',label:'배변 습관 변화 (설사·변비)',warn:true},{v:'혈변',label:'혈변·혈뇨',warn:true},
+        {v:'소화불량',label:'만성 소화불량·속쓰림',warn:true},{v:'복통',label:'반복되는 복통·복부 불편',warn:true},
+        {v:'체중감소',label:'설명 안 되는 체중 감소',warn:true}
+      ]},
+      { label:'심혈관·호흡기', chips:[
+        {v:'흉통',label:'가슴 통증·두근거림',warn:true},{v:'호흡곤란',label:'호흡 곤란·숨참',warn:true},
+        {v:'부종',label:'다리·발 부종',warn:true},{v:'혈압두통',label:'뒷목 뻣뻣함·심한 두통',warn:true}
+      ]},
+      { label:'신경·근골격', chips:[
+        {v:'두통',label:'잦은 두통·어지럼증',warn:true},{v:'손발저림',label:'손발 저림·감각 이상',warn:true},
+        {v:'근력저하',label:'근력 저하·자주 넘어짐',warn:true},{v:'관절통',label:'관절 통증·부종',warn:true}
+      ]},
+      { label:'전신·피부', chips:[
+        {v:'만성피로',label:'만성 피로·기력 저하',warn:true},{v:'야간발한',label:'야간 발한·식은땀',warn:true},
+        {v:'피부변화',label:'피부 변색·가려움·발진',warn:true},{v:'탈모',label:'급격한 탈모',warn:true}
+      ]},
+      { label:'비뇨·여성', chips:[
+        {v:'배뇨이상',label:'빈뇨·배뇨 통증',warn:true},{v:'여성증상',label:'생리불순·갱년기 증상',warn:true},
+        {v:'유방이상',label:'유방 멍울·분비물',warn:true}
+      ]},
+      { label:'정신건강', chips:[
+        {v:'기억력저하',label:'기억력·집중력 저하',warn:true},{v:'불안우울증상',label:'불안·우울감 지속',warn:true},
+        {v:'수면장애증상',label:'수면 장애 (불면·과수면)',warn:true}
+      ]},
+      { label:'해당사항', chips:[{v:'증상없음',label:'특별한 증상 없음',green:true,exclusive:true}]}
+    ]
+  }
+];
+
+/* ─── 상태 ─── */
+let cur = 0;
+const ans = {}; // val → true/false
+
+/* ─── 초기화 ─── */
+function init() {
+  buildTabMenu();
+  buildTabContent();
+  buildProgDots();
+  // 첫 번째 탭 명시적 활성화
+  document.getElementById('pane-0').classList.add('active');
+  updateUI();
+}
+
+function buildTabMenu() {
+  document.getElementById('tabMenu').innerHTML = TABS.map((t,i) =>
+    `<button class="tm-tab${i===0?' active':''}" id="tb${i}" onclick="goTab(${i})">
+      <span class="tab-dot"></span><span class="tab-check">✓</span>${t.name}
+    </button>`
+  ).join('');
+}
+
+function buildTabContent() {
+  document.getElementById('tabContent').innerHTML = TABS.map((t,i) => {
+    // 기본정보 탭 특수 렌더링 — 반드시 먼저 처리
+    if (t.isBasic) {
+      return `<div class="tab-pane" id="pane-${i}">
+        <div class="tc-step">${t.step} / 10 — ${t.name}</div>
+        <h3 class="tc-title">${t.title}</h3>
+        <p class="tc-sub">${t.sub}</p>
+        <div class="basic-grid">
+          <div class="basic-field">
+            <label class="field-label">나이</label>
+            <input class="basic-input" type="number" id="basic-age" placeholder="예: 52" min="10" max="100"
+              oninput="basicInput('age',this.value)"/>
+          </div>
+          <div class="basic-field">
+            <label class="field-label">성별</label>
+            <select class="basic-select" id="basic-gender" onchange="basicInput('gender',this.value)">
+              <option value="">선택하세요</option>
+              <option value="female">여성</option>
+              <option value="male">남성</option>
+            </select>
+          </div>
+          <div class="basic-field">
+            <label class="field-label">키 (cm) — 선택</label>
+            <input class="basic-input" type="number" id="basic-height" placeholder="예: 162" min="100" max="220"
+              oninput="basicInput('height',this.value)"/>
+          </div>
+          <div class="basic-field">
+            <label class="field-label">체중 (kg) — 선택</label>
+            <input class="basic-input" type="number" id="basic-weight" placeholder="예: 58" min="20" max="200"
+              oninput="basicInput('weight',this.value)"/>
+          </div>
+        </div>
+        <div class="bmi-box" id="bmiBox" style="display:none;">
+          BMI: <strong id="bmiVal">—</strong> &nbsp;·&nbsp; <span id="bmiLabel">—</span>
+        </div>
+        <div class="etc-wrap" style="margin-top:1rem;">
+          <label class="field-label">기타 (직접 입력)</label>
+          <textarea class="etc-input" id="etc-${i}" placeholder="참고할 특이사항이 있으시면 자유롭게 적어주세요." oninput="etcInput(${i},this.value)"></textarea>
+        </div>
+      </div>`;
+    }
+
+    // 일반 탭 렌더링
+    const fieldsHtml = t.fields.map((f, fi) => {
+      const chipsHtml = f.chips.map(c => {
+        const lbl = c.label || c.v;
+        const cls = ['chip', c.warn?'warn':''].filter(Boolean).join(' ');
+        const attrs = [
+          `data-v="${c.v}"`,
+          c.single?'data-single="1"':'',
+          c.exclusive?'data-excl="1"':'',
+        ].join(' ');
+        return `<div class="${cls}" ${attrs} onclick="chipClick(this,${i},${fi})">${lbl}</div>`;
+      }).join('');
+      return `<label class="field-label">${f.label}</label><div class="chips" id="cg-${i}-${fi}">${chipsHtml}</div>`;
+    }).join('');
+
+    const etcHtml = `<div class="etc-wrap"><label class="field-label">기타 (직접 입력)</label><textarea class="etc-input" id="etc-${i}" placeholder="위 항목에 없는 내용을 자유롭게 적어주세요." oninput="etcInput(${i},this.value)"></textarea></div>`;
+    const alertHtml = t.alert
+      ? `<div class="alert-banner" id="alert-${i}">${t.alert}</div>` : '';
+    return `<div class="tab-pane" id="pane-${i}">
+      <div class="tc-step">${t.step} / 10 — ${t.name}</div>
+      <h3 class="tc-title">${t.title}</h3>
+      <p class="tc-sub">${t.sub}</p>
+      ${fieldsHtml}${etcHtml}${alertHtml}
+    </div>`;
+  }).join('');
+}
+
+function buildProgDots() {
+  document.getElementById('progDots').innerHTML = TABS.map((_,i) =>
+    `<div class="pd${i===0?' curr':''}" id="pd${i}" onclick="goTab(${i})"></div>`
+  ).join('');
+}
+
+/* ─── 칩 클릭 ─── */
+function chipClick(el, tabIdx, fieldIdx) {
+  const v = el.dataset.v;
+  const isSingle = el.dataset.single === '1';
+  const isExcl = el.dataset.excl === '1';
+  const groupId = `cg-${tabIdx}-${fieldIdx}`;
+  const groupChips = document.querySelectorAll(`#${groupId} .chip`);
+
+  if (isSingle) {
+    groupChips.forEach(c => { c.classList.remove('sel'); ans[c.dataset.v] = false; });
+    const wasOn = el.classList.contains('sel') || (el.classList.contains('sel-g') && el.dataset.excl);
+    // 단순 토글
+    if (el.classList.contains('warn')) {
+      el.classList.toggle('sel');
+      ans[v] = el.classList.contains('sel');
+    } else {
+      el.classList.toggle('sel-g');
+      ans[v] = el.classList.contains('sel-g');
+    }
+  } else if (isExcl) {
+    const wasOn = ans[v];
+    groupChips.forEach(c => { c.classList.remove('sel','sel-g'); ans[c.dataset.v] = false; });
+    if (!wasOn) {
+      el.classList.add(el.classList.contains('warn') ? 'sel' : 'sel-g');
+      ans[v] = true;
+    }
+  } else {
+    // 다중 선택 — exclusive 해제
+    groupChips.forEach(c => { if (c.dataset.excl==='1') { c.classList.remove('sel','sel-g'); ans[c.dataset.v]=false; } });
+    if (el.classList.contains('warn')) {
+      el.classList.toggle('sel'); ans[v] = el.classList.contains('sel');
+    } else {
+      el.classList.toggle('sel-g'); ans[v] = el.classList.contains('sel-g');
+    }
+  }
+
+  updateTabFilled(tabIdx);
+  updateProgress();
+  checkAlerts();
+}
+
+const basicData = { age:'', gender:'', height:'', weight:'' };
+
+function basicInput(key, val) {
+  basicData[key] = val;
+  // BMI 계산
+  const h = parseFloat(basicData.height), w = parseFloat(basicData.weight);
+  const bmiBox = document.getElementById('bmiBox');
+  if (h > 0 && w > 0 && bmiBox) {
+    const bmi = (w / ((h/100)**2)).toFixed(1);
+    let label = '';
+    if (bmi < 18.5) label = '저체중';
+    else if (bmi < 23) label = '정상';
+    else if (bmi < 25) label = '과체중';
+    else if (bmi < 30) label = '비만';
+    else label = '고도비만';
+    document.getElementById('bmiVal').textContent = bmi;
+    document.getElementById('bmiLabel').textContent = label;
+    bmiBox.style.display = 'block';
+    // 비만 리스크 자동 반영
+    if (bmi >= 30) { ans['비만'] = true; }
+    else { delete ans['비만']; }
+  } else if (bmiBox) { bmiBox.style.display = 'none'; }
+  updateTabFilled(0);
+  updateProgress();
+}
+
+const etcAnswers = {};
+function etcInput(tabIdx, val) {
+  etcAnswers[tabIdx] = val.trim();
+  updateTabFilled(tabIdx);
+}
+function has(v) { return !!ans[v]; }
+
+function checkAlerts() {
+  // 가족력 암 → 식생활 경고
+  const hasCancer = ['대장암','위암','유방암','폐암','간암','기타암'].some(v => has(v));
+  const al = document.getElementById('alert-1');
+  if (al) al.classList.toggle('show', hasCancer);
+}
+
+function updateTabFilled(idx) {
+  const btn = document.getElementById(`tb${idx}`);
+  if (!btn) return;
+  const t = TABS[idx];
+  const filled = t.isBasic
+    ? !!(basicData.age || basicData.gender || etcAnswers[idx])
+    : (t.fields.some(f => f.chips.some(c => ans[c.v])) || !!(etcAnswers[idx] && etcAnswers[idx].length > 0));
+  btn.classList.toggle('filled', filled);
+  btn.classList.toggle('active', idx === cur);
+}
+
+function updateProgress() {
+  let filled = 0;
+  TABS.forEach((_,i) => { if (TABS[i].fields.some(f => f.chips.some(c => ans[c.v]))) filled++; });
+  const pct = Math.max(10, Math.round(filled/10*100));
+  document.getElementById('pbFill').style.width = pct + '%';
+  document.getElementById('pbLabel').textContent = `${filled} / 10 완료`;
+}
+
+/* ─── 탭 이동 ─── */
+function goTab(idx) {
+  // 안전하게 모든 pane/탭 비활성화 후 해당 탭만 활성화
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tm-tab').forEach(b => b.classList.remove('active'));
+  for(let i=0;i<11;i++) {
+    const pd = document.getElementById(`pd${i}`);
+    if(pd) pd.classList.remove('curr');
+  }
+  updateTabFilled(cur);
+
+  cur = idx;
+  const pane = document.getElementById(`pane-${cur}`);
+  const btn  = document.getElementById(`tb${cur}`);
+  if(pane) pane.classList.add('active');
+  if(btn)  btn.classList.add('active');
+
+  updateUI();
+  checkAlerts();
+}
+function nextTab() { if (cur < 10) goTab(cur + 1); }
+function prevTab() { if (cur > 0) goTab(cur - 1); }
+
+function updateUI() {
+  for(let i=0;i<11;i++) {
+    const pd = document.getElementById(`pd${i}`);
+    pd.className = 'pd' + (i<cur?' done':i===cur?' curr':'');
+  }
+  const btnB = document.getElementById('btnBack');
+  const btnN = document.getElementById('btnNext');
+  const btnR = document.getElementById('btnResult');
+  btnB.style.display = cur===0 ? 'none' : '';
+  if (cur===10) { btnN.style.display='none'; btnR.style.display=''; }
+  else { btnN.style.display=''; btnR.style.display='none'; document.getElementById('nextLabel').textContent=`(${TABS[cur+1].name})`; }
+}
+
+/* ─── 리스크 진단 엔진 ─── */
+function calcRisks() {
+  const risks = [];
+
+  // 즉시 확인 증상
+  const urgent = [];
+  if (has('혈변')) urgent.push('혈변·혈뇨');
+  if (has('체중감소')) urgent.push('설명 안 되는 체중 감소');
+  if (has('흉통')) urgent.push('가슴 통증·두근거림');
+  if (urgent.length) risks.push({ lv:'r', name:'🚨 즉시 확인 필요 증상', badge:'즉시 확인',
+    combo: urgent.join(', ') + ' 증상이 보고되었습니다. 반드시 의료기관에서 확인이 필요합니다.',
+    action:'가까운 병원에서 진찰을 받으세요. 절대 미루지 마세요.', key:'증상' });
+
+  // 대장암
+  { let s=0; const f=[];
+    if(has('대장암')){s+=3;f.push('가족력(대장암)');}
+    if(has('육류중심')){s+=2;f.push('육식 위주');}
+    if(has('가공식품')){s+=1.5;f.push('가공식품 잦음');}
+    if(has('채소부족')){s+=1.5;f.push('채소·과일 부족');}
+    if(has('현재흡연')||has('과거흡연')){s+=1;f.push('흡연 이력');}
+    if(has('위장질환')){s+=1;f.push('위장 질환');}
+    if(s>=4) risks.push({ lv:s>=6?'r':'a', name:'🔴 대장암 복합 위험', badge:s>=6?'매우 주의':'주의',
+      combo:f.join(' + ')+'의 조합. 30년 임상에서 가장 많이 본 패턴입니다.',
+      action:'식이 개선이 가장 시급합니다. 붉은 육류를 주 2회 이하로 줄이는 것부터 시작하세요.', key:'대장암' });
+  }
+
+  // 위암
+  { let s=0; const f=[];
+    if(has('위암')){s+=3;f.push('가족력(위암)');}
+    if(has('짜게')){s+=2;f.push('짜게 먹음');}
+    if(has('현재흡연')){s+=1.5;f.push('흡연');}
+    if(has('가공식품')){s+=1;f.push('가공식품');}
+    if(has('육류중심')){s+=1;f.push('육류 중심');}
+    if(s>=4) risks.push({ lv:s>=6?'r':'a', name:'🔴 위암 위험', badge:s>=6?'매우 주의':'주의',
+      combo:f.join(' + ')+'의 조합.',
+      action:'염분 섭취를 줄이고 정기적인 위내시경 검진을 권장합니다.', key:'위암' });
+  }
+
+  // 유방암
+  { let s=0; const f=[];
+    if(has('유방암')){s+=3;f.push('가족력(유방암)');}
+    if(has('비만')){s+=2;f.push('비만');}
+    if(has('음주거의매일')||has('음주주3-4회')){s+=1.5;f.push('잦은 음주');}
+    if(has('스트레스매우높음')||has('스트레스높음')){s+=1;f.push('높은 스트레스');}
+    if(s>=3) risks.push({ lv:s>=5?'r':'a', name:'🔴 유방암 위험', badge:s>=5?'매우 주의':'주의',
+      combo:f.join(' + ')+'의 조합.',
+      action:'정기 유방 검진과 자가 검진을 습관화하세요. 음주를 줄이는 것이 가장 효과적입니다.', key:'유방암' });
+  }
+
+  // 폐암
+  { let s=0; const f=[];
+    if(has('폐암')){s+=3;f.push('가족력(폐암)');}
+    if(has('현재흡연')){s+=4;f.push('현재 흡연');}
+    if(has('과거흡연')){s+=2;f.push('과거 흡연');}
+    if(has('호흡곤란')){s+=1;f.push('호흡 곤란 증상');}
+    if(s>=3) risks.push({ lv:s>=6?'r':'a', name:'🔴 폐 건강 위험', badge:s>=6?'매우 주의':'주의',
+      combo:f.join(' + ')+'.',
+      action:'금연이 가장 중요한 단 하나의 행동입니다. 저선량 CT 검진을 권장합니다.', key:'폐암' });
+  }
+
+  // 심혈관
+  { let s=0; const f=[];
+    if(has('가족력심장')||has('가족력뇌졸중')||has('가족력고혈압')){s+=2;f.push('심혈관 가족력');}
+    if(has('운동안함')||has('주1-2회')){s+=2;f.push('운동 부족');}
+    if(has('스트레스매우높음')||has('스트레스높음')){s+=1.5;f.push('높은 스트레스');}
+    if(has('고혈압진단')){s+=2;f.push('고혈압');}
+    if(has('당뇨진단')){s+=1.5;f.push('당뇨');}
+    if(has('비만')){s+=1.5;f.push('비만');}
+    if(has('가공식품')){s+=1;f.push('가공식품');}
+    if(s>=4) risks.push({ lv:s>=6?'r':'a', name:'🟡 심혈관 위험', badge:s>=6?'매우 주의':'주의',
+      combo:f.join(' + ')+'의 조합.',
+      action:'매일 30분 걷기가 가장 효과적입니다. 혈압 측정을 생활화하세요.', key:'심혈관' });
+  }
+
+  // 수면·면역
+  { let s=0; const f=[];
+    if(has('수면5h미만')){s+=2.5;f.push('수면 5시간 미만');}
+    else if(has('수면5-6h')){s+=1.5;f.push('수면 5~6시간');}
+    if(has('수면질나쁨')){s+=2;f.push('수면 질 나쁨');}
+    if(has('코골이')){s+=1.5;f.push('수면무호흡');}
+    if(has('야근교대')){s+=1.5;f.push('야근·교대근무');}
+    if(s>=3) risks.push({ lv:s>=5?'r':'a', name:'🟡 수면 불량 → 면역력 저하', badge:s>=5?'매우 주의':'주의',
+      combo:f.join(' + ')+'. 만성 수면 부족은 면역 감시 기능을 떨어뜨려 암 예방에도 영향을 줍니다.',
+      action:'취침 1시간 전 스크린 OFF가 가장 쉬운 시작점입니다.', key:'수면' });
+  }
+
+  // 간
+  { let s=0; const f=[];
+    if(has('음주거의매일')){s+=3;f.push('거의 매일 음주');}
+    else if(has('음주주3-4회')){s+=2;f.push('주 3~4회 음주');}
+    if(has('폭음')||has('과음')){s+=2;f.push('과음 습관');}
+    if(has('간질환')){s+=2;f.push('간 질환');}
+    if(has('간암')){s+=2;f.push('가족력(간암)');}
+    if(s>=3) risks.push({ lv:s>=5?'r':'a', name:'🟡 간 건강 주의', badge:s>=5?'매우 주의':'주의',
+      combo:f.join(' + ')+'의 조합.',
+      action:'음주 횟수와 양을 동시에 줄여야 합니다. 간 기능 수치 정기 확인을 권장합니다.', key:'간' });
+  }
+
+  // 대사증후군
+  { let s=0; const f=[];
+    if(has('비만')){s+=2;f.push('비만');}
+    if(has('당뇨진단')){s+=2;f.push('당뇨');}
+    if(has('고지혈증진단')){s+=1.5;f.push('고지혈증');}
+    if(has('불규칙')){s+=1;f.push('불규칙한 식사');}
+    if(has('운동안함')||has('주1-2회')){s+=1.5;f.push('운동 부족');}
+    if(s>=4) risks.push({ lv:s>=6?'r':'a', name:'🟡 대사증후군 위험', badge:s>=6?'매우 주의':'주의',
+      combo:f.join(' + ')+'의 조합.',
+      action:'식사 규칙성과 운동을 함께 관리해야 합니다.', key:'대사' });
+  }
+
+  // 양호 항목
+  if (has('비흡연') && (has('음주안함')||has('음주월1-2회'))) {
+    risks.push({ lv:'g', name:'🟢 음주·흡연 양호', badge:'양호',
+      combo:'비흡연, 절주 상태입니다. 암 예방의 핵심 요소를 잘 관리하고 계십니다.',
+      action:'현재 상태를 유지하세요.', key:null });
+  }
+  if (has('수면7-8h') && has('수면질좋음')) {
+    risks.push({ lv:'g', name:'🟢 수면 양호', badge:'양호',
+      combo:'규칙적이고 질 좋은 수면을 유지하고 계십니다.',
+      action:'이 습관을 유지하세요.', key:null });
+  }
+
+  if (risks.length===0) risks.push({ lv:'g', name:'🟢 전반적으로 양호', badge:'양호',
+    combo:'체크하신 항목들에서 큰 위험 신호가 발견되지 않았습니다.',
+    action:'현재 생활습관을 유지하고, 정기 건강검진을 꾸준히 받으세요.', key:null });
+
+  return risks;
+}
+
+/* ─── 생활습관 우선순위 액션 엔진 ─── */
+const ACTION_MAP = [
+  // [조건함수, 우선점수, 액션 데이터]
+  { cond: () => has('운동안함') || has('주1-2회'),
+    score: () => (has('운동안함')?10:6) + (has('고혈압진단')||has('당뇨진단')?3:0),
+    data: { title:'규칙적인 신체 활동 시작', icon:'🏃',
+      curr: '운동 거의 없음', goal: '주 3회 이상 30분',
+      why: '심혈관·대사 리스크를 낮추는 가장 효과적인 방법',
+      how: '오늘 저녁 20분 걷기부터. 엘리베이터 대신 계단.',
+      clinical: '병동에서 본 환자들 중 "운동만 꾸준히 했어도"라는 말이 가장 많았습니다.' }},
+  { cond: () => has('가공식품') || has('채소부족') || has('육류중심'),
+    score: () => (has('가공식품')?8:0) + (has('채소부족')?6:0) + (has('육류중심')?5:0)
+               + (has('대장암')||has('위암')?4:0),
+    data: { title:'식이 패턴 개선', icon:'🥗',
+      curr: has('육류중심') ? '육류 중심 식사' : '가공식품·채소 부족',
+      goal: '채소 매끼, 붉은 육류 주 2회 이하',
+      why: '암·심혈관 위험과 가장 직접 연결되는 요인',
+      how: '식사의 절반을 채소로. 가공식품은 장 볼 때 안 사면 자연히 줄어듭니다.',
+      clinical: '식이 하나만 바꿔도 리스크가 달라지는 것을 30년간 직접 봤습니다.' }},
+  { cond: () => has('수면5h미만') || has('수면5-6h') || has('수면질나쁨'),
+    score: () => (has('수면5h미만')?9:has('수면5-6h')?6:0) + (has('수면질나쁨')?5:0),
+    data: { title:'수면 시간·질 개선', icon:'😴',
+      curr: has('수면5h미만') ? '5시간 미만 수면' : '5~6시간 / 질 나쁨',
+      goal: '7시간 이상, 숙면',
+      why: '수면 부족은 면역 감시 기능을 떨어뜨려 암 예방에도 영향',
+      how: '취침 1시간 전 스크린 OFF. 취침·기상 시간 일정하게 유지.',
+      clinical: '수면은 쉬운 것 같지만, 면역력의 기반입니다. 작은 루틴이 큰 차이를 만듭니다.' }},
+  { cond: () => has('스트레스매우높음') || has('스트레스높음'),
+    score: () => (has('스트레스매우높음')?8:5) + (has('음주해소')||has('폭식해소')?3:0),
+    data: { title:'스트레스 관리 루틴 만들기', icon:'🧘',
+      curr: has('스트레스매우높음') ? '스트레스 매우 높음' : '스트레스 높음',
+      goal: '해소 루틴 주 3회 이상',
+      why: '만성 스트레스는 면역 체계를 약화시켜 여러 질환 위험을 높임',
+      how: '10분 산책, 깊은 호흡. 음주·폭식으로 푸는 패턴은 리스크를 더 쌓습니다.',
+      clinical: '스트레스 해소를 음주로 하는 분들이 많습니다. 그 자체가 또 다른 리스크입니다.' }},
+  { cond: () => has('현재흡연'),
+    score: () => 12,
+    data: { title:'금연', icon:'🚭',
+      curr: '현재 흡연 중', goal: '금연',
+      why: '암 발생의 가장 강력한 단일 위험 요인',
+      how: '금연 클리닉 활용. 혼자보다 전문가 도움이 성공률 3배.',
+      clinical: '금연 하나가 여러 암 리스크를 동시에 낮춥니다. 지금이 제일 좋은 시점입니다.' }},
+  { cond: () => has('음주거의매일') || has('음주주3-4회'),
+    score: () => (has('음주거의매일')?9:6) + (has('폭음')||has('과음')?3:0),
+    data: { title:'음주 빈도·양 줄이기', icon:'🍶',
+      curr: has('음주거의매일') ? '거의 매일 음주' : '주 3~4회',
+      goal: '주 1~2회 이하, 소주 1~2잔',
+      why: '간·유방암·식도암 위험과 직결. 음주량보다 빈도가 더 해롭습니다.',
+      how: '우선 이틀 연속 금주부터. 술자리 전 식사하면 음주량이 자연히 줄어듭니다.',
+      clinical: '음주 빈도를 줄이는 것만으로도 간 수치가 빠르게 회복되는 경우를 많이 봤습니다.' }},
+  { cond: () => has('좌식8h이상') && !has('운동안함'),
+    score: () => 4,
+    data: { title:'좌식 생활 줄이기', icon:'🪑',
+      curr: '하루 8시간 이상 좌식', goal: '1시간마다 5분 이동',
+      why: '운동을 해도 장시간 앉아있으면 심혈관 리스크가 별도로 올라감',
+      how: '타이머 1시간 설정. 서서 일하는 시간 늘리기. 전화는 걸으면서.',
+      clinical: '운동하는 분도 하루 종일 앉아 있으면 리스크가 따로 쌓입니다.' }},
+];
+
+function renderActions() {
+  const scored = ACTION_MAP
+    .filter(a => a.cond())
+    .map(a => ({...a.data, score: a.score()}))
+    .sort((a,b) => b.score - a.score)
+    .slice(0, 3);
+
+  const section = document.getElementById('actionSection');
+  const cards = document.getElementById('actionCards');
+  if (!scored.length) { section.style.display='none'; return; }
+
+  section.style.display = 'block';
+  const ranks = ['1순위','2순위','3순위'];
+  cards.innerHTML = scored.map((a, i) => `
+    <div class="action-card">
+      <div class="action-card-head">
+        <div class="action-rank"><span class="action-rank-n">${i+1}</span></div>
+        <div class="action-body">
+          <div class="action-title">${a.icon} ${a.title}</div>
+          <div class="action-rows">
+            <div class="action-row"><span class="action-row-label">현재</span>${a.curr}</div>
+            <div class="action-row"><span class="action-row-label">목표</span>${a.goal}</div>
+            <div class="action-row" style="grid-column:1/-1;"><span class="action-row-label">이유</span>${a.why}</div>
+          </div>
+          <div class="action-how">→ ${a.how}</div>
+          ${a.clinical ? `<div style="margin-top:0.5rem;padding:0.55rem 0.8rem;background:rgba(90,107,63,0.06);border-left:2px solid var(--olive);font-family:'Fraunces',serif;font-size:0.75rem;color:var(--mute);font-style:italic;line-height:1.55;">"${a.clinical}"</div>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ─── 약-영양제 상호작용 DB ─── */
+const DRUG_SUPP_INTERACTIONS = [
+  {
+    drug: '항응고제',
+    conflicts: [
+      { supp: '오메가3', level: 'r', msg: '오메가3는 혈액 응고를 추가 억제합니다. 출혈 위험이 높아질 수 있습니다. 복용 전 반드시 담당 의사와 상담하세요.' },
+      { supp: '비타민E', level: 'r', msg: '고용량 비타민E는 와파린 효과를 강화해 출혈 위험을 높입니다.' },
+      { supp: '종합비타민', level: 'a', msg: '종합비타민 내 비타민E·K 함량에 따라 영향이 달라질 수 있습니다.' },
+    ]
+  },
+  {
+    drug: '고지혈증약',
+    conflicts: [
+      { supp: '코엔자임Q10', level: 'g', msg: '스타틴 계열 약물 복용 시 코엔자임Q10이 고갈됩니다. 오히려 보충을 권장합니다.' },
+      { supp: '비타민C', level: 'g', msg: '병용 가능합니다. 항산화 효과로 도움이 될 수 있습니다.' },
+    ]
+  },
+  {
+    drug: '갑상선약',
+    conflicts: [
+      { supp: '칼슘', level: 'r', msg: '칼슘은 갑상선약 흡수를 방해합니다. 반드시 4시간 이상 간격을 두고 복용하세요.' },
+      { supp: '마그네슘', level: 'a', msg: '마그네슘도 흡수에 영향을 줄 수 있습니다. 2시간 이상 간격을 권장합니다.' },
+      { supp: '오메가3', level: 'g', msg: '병용 가능합니다. 복용 시간만 달리하세요.' },
+    ]
+  },
+  {
+    drug: '고혈압약',
+    conflicts: [
+      { supp: '오메가3', level: 'a', msg: '오메가3는 혈압을 추가로 낮출 수 있습니다. 혈압 변화를 모니터링하세요.' },
+      { supp: '마그네슘', level: 'g', msg: '병용 가능합니다. 마그네슘은 혈압 관리에 도움이 됩니다.' },
+      { supp: '코엔자임Q10', level: 'g', msg: '병용 가능합니다. 심장 기능에 도움이 됩니다.' },
+    ]
+  },
+  {
+    drug: '당뇨약',
+    conflicts: [
+      { supp: '홍삼인삼', level: 'r', msg: '인삼류는 혈당을 추가로 낮출 수 있어 저혈당 위험이 있습니다. 반드시 의사와 상담하세요.' },
+      { supp: '마그네슘', level: 'g', msg: '마그네슘은 인슐린 감수성 개선에 도움이 됩니다. 병용 가능합니다.' },
+      { supp: '비타민D', level: 'g', msg: '비타민D는 인슐린 분비에 긍정적 영향을 줍니다.' },
+    ]
+  },
+  {
+    drug: '항암치료',
+    conflicts: [
+      { supp: '비타민C', level: 'r', msg: '고용량 항산화 영양제는 항암 효과를 저하시킬 수 있습니다. 항암 치료 중에는 반드시 담당 의사 지시에 따르세요.' },
+      { supp: '오메가3', level: 'r', msg: '항암 치료 중 복용은 담당 의사와 상담 후 결정하세요.' },
+      { supp: '비타민E', level: 'r', msg: '항산화 영양제는 암세포를 보호할 수 있습니다. 항암 치료 중 복용을 삼가세요.' },
+      { supp: '루테인', level: 'a', msg: '항암 치료 중 복용은 담당 의사와 상담하세요.' },
+      { supp: '종합비타민', level: 'r', msg: '항암 치료 중 항산화 성분이 포함된 종합비타민은 치료 효과에 영향을 줄 수 있습니다.' },
+    ]
+  },
+  {
+    drug: '정신과약',
+    conflicts: [
+      { supp: '홍삼인삼', level: 'a', msg: '일부 항우울제와 인삼류는 상호작용이 있을 수 있습니다. 담당 의사와 상담하세요.' },
+      { supp: '마그네슘', level: 'g', msg: '수면 보조·스트레스 완화에 도움이 됩니다. 병용 가능합니다.' },
+      { supp: '오메가3', level: 'g', msg: '오메가3는 항우울 효과를 보조할 수 있습니다. 병용 가능합니다.' },
+    ]
+  },
+  {
+    drug: '진통제상시',
+    conflicts: [
+      { supp: '오메가3', level: 'a', msg: 'NSAIDs 계열과 병용 시 출혈 위험이 증가할 수 있습니다.' },
+      { supp: '밀크시슬', level: 'g', msg: '장기 진통제 복용 시 간 보호 효과가 있습니다. 병용 권장합니다.' },
+    ]
+  },
+];
+
+function checkInteractions(takingDrugs, takingSupps) {
+  const warnings = [];
+  const positives = [];
+
+  takingDrugs.forEach(drug => {
+    const drugData = DRUG_SUPP_INTERACTIONS.find(d => d.drug === drug);
+    if (!drugData) return;
+
+    drugData.conflicts.forEach(conflict => {
+      const isActuallyTaking = takingSupps.some(s =>
+        s.includes(conflict.supp) || conflict.supp.includes(s.split('·')[0])
+      );
+      if (isActuallyTaking) {
+        if (conflict.level === 'r') {
+          warnings.push({ drug, supp: conflict.supp, level: 'r', msg: conflict.msg });
+        } else if (conflict.level === 'a') {
+          warnings.push({ drug, supp: conflict.supp, level: 'a', msg: conflict.msg });
+        } else {
+          positives.push({ drug, supp: conflict.supp, msg: conflict.msg });
+        }
+      }
+    });
+  });
+
+  return { warnings, positives };
+}
+
+/* ─── 영양제 축약 추천 엔진 ─── */
+const SUPP_DB = [
+  { key:'omega3', name:'오메가-3',
+    cond: () => has('육류중심')||has('가공식품')||has('가족력심장')||has('고혈압진단'),
+    why: '염증 수치 조절·심혈관 보호. 식이에서 부족하기 쉬운 성분.',
+    timing: '저녁 식후', priority: () => (has('가족력심장')||has('고혈압진단')?9:6) },
+  { key:'vitD', name:'비타민 D',
+    cond: () => has('좌식8h이상')||has('운동안함')||has('수면질나쁨'),
+    why: '실내 생활이 많을수록 부족. 면역·뼈·기분 조절에 필수.',
+    timing: '아침 식후', priority: () => 7 },
+  { key:'magnesium', name:'마그네슘',
+    cond: () => has('수면5h미만')||has('수면5-6h')||has('수면질나쁨')||has('스트레스매우높음')||has('스트레스높음'),
+    why: '수면 질 개선·근육 이완·스트레스 완화. 부족 시 수면 방해.',
+    timing: '취침 30분 전', priority: () => (has('수면5h미만')?9:7) },
+  { key:'probiotics', name:'유산균 (프로바이오틱스)',
+    cond: () => has('가공식품')||has('채소부족')||has('대장암')||has('위장질환'),
+    why: '장내 환경 개선. 가공식품·채소 부족 식이에서 특히 중요.',
+    timing: '아침 공복 또는 식후', priority: () => (has('대장암')?9:6) },
+  { key:'vitC', name:'비타민 C',
+    cond: () => has('현재흡연')||has('스트레스매우높음')||has('채소부족'),
+    why: '흡연·스트레스로 급격히 소모. 면역·항산화 기능.',
+    timing: '아침·점심 식후', priority: () => (has('현재흡연')?8:5) },
+  { key:'coq10', name:'코엔자임 Q10',
+    cond: () => has('고혈압약')||has('고지혈증약')||has('스트레스매우높음'),
+    why: '스타틴 계열 약물 복용 시 필수 보충. 심장·에너지 대사.',
+    timing: '식후 (지용성)', priority: () => (has('고혈압약')||has('고지혈증약')?9:5) },
+  { key:'zinc', name:'아연',
+    cond: () => has('만성피로')||has('수면5h미만')||has('스트레스매우높음'),
+    why: '면역 기능·피로 개선. 만성 피로나 스트레스 높을 때 부족해지기 쉬움.',
+    timing: '저녁 식후', priority: () => 5 },
+  { key:'folate', name:'엽산 (폴레이트)',
+    cond: () => has('대장암')||has('음주거의매일')||has('음주주3-4회'),
+    why: '알코올이 엽산 흡수를 방해. 대장암 가족력 있을 때 중요.',
+    timing: '아침 식후', priority: () => (has('대장암')?8:5) },
+];
+
+function renderSupps(risks) {
+  const section = document.getElementById('suppSection');
+  const cards = document.getElementById('suppCards');
+
+  const matched = SUPP_DB
+    .filter(s => s.cond())
+    .map(s => ({...s, p: s.priority()}))
+    .sort((a,b) => b.p - a.p)
+    .slice(0, 3);
+
+  // 현재 복용 중인 영양제 값
+  const taking = ['종합비타민','오메가3','유산균','비타민D','비타민C','마그네슘','코엔자임Q10','루테인','기타영양제'];
+  const currentlyTaking = taking.filter(v => has(v));
+
+  // 항상 표시
+  section.style.display = 'block';
+  if (!matched.length) {
+    cards.innerHTML = '<div style="padding:0.8rem 1rem;font-family:\'Fraunces\',serif;font-size:0.85rem;color:var(--mute);line-height:1.7;">현재 입력하신 정보 기준으로 특별히 추가가 필요한 영양제는 없습니다.<br/>현재 복용 중이신 영양제가 있다면 1:1 상담에서 적합성을 확인해드립니다.</div>';
+    return;
+  }
+
+  const ranks = ['1순위','2순위','3순위'];
+  cards.innerHTML = matched.map((s, i) => {
+    const isTaking = currentlyTaking.some(t =>
+      t.toLowerCase().replace(/[-\s]/g,'').includes(s.key.toLowerCase().replace(/[-\s]/g,''))
+    );
+    return `<div class="supp-card">
+      <span class="supp-rank-badge">${ranks[i]}</span>
+      <div class="supp-info">
+        <div class="supp-name">${s.name} ${isTaking ? '<span style="font-size:0.65rem;background:rgba(90,107,63,0.12);color:var(--olive);padding:0.1rem 0.4rem;margin-left:0.3rem;">이미 복용 중 ✓</span>' : ''}</div>
+        <div class="supp-why">${s.why}</div>
+        <div class="supp-timing">⏰ 권장 복용 시간: ${s.timing}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── 약-영양제 상호작용 체크
+  const myDrugs = ['고혈압약','당뇨약','고지혈증약','항응고제','갑상선약','항암치료','정신과약','진통제상시']
+    .filter(d => has(d));
+  const mySupps = ['종합비타민','오메가3','유산균','비타민D','비타민C','마그네슘','코엔자임Q10','루테인','철분','칼슘','밀크시슬','홍삼인삼','콜라겐']
+    .filter(s => has(s));
+
+  if (myDrugs.length > 0 && mySupps.length > 0) {
+    const { warnings, positives } = checkInteractions(myDrugs, mySupps);
+
+    if (warnings.length > 0) {
+      const warnHtml = warnings.map(w => `
+        <div style="display:flex;align-items:flex-start;gap:0.7rem;padding:0.7rem 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="color:${w.level==='r'?'var(--red)':'var(--amber)'};flex-shrink:0;font-size:0.85rem;">${w.level==='r'?'🔴':'🟡'}</span>
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;color:${w.level==='r'?'rgba(192,57,43,0.8)':'rgba(212,133,10,0.8)'};margin-bottom:0.25rem;">${w.drug} + ${w.supp}</div>
+            <div style="font-family:'Fraunces',serif;font-size:0.8rem;color:rgba(245,241,234,0.7);line-height:1.6;">${w.msg}</div>
+          </div>
+        </div>`).join('');
+
+      cards.innerHTML += `
+        <div style="margin-top:0.8rem;background:var(--ink);padding:1rem 1.1rem;border-left:3px solid var(--red);">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.2em;color:rgba(192,57,43,0.8);margin-bottom:0.7rem;">⚠️ 복용 중인 약·영양제 주의 조합</div>
+          ${warnHtml}
+        </div>`;
+    }
+
+    if (positives.length > 0) {
+      const posHtml = positives.map(p => `
+        <div style="display:flex;align-items:flex-start;gap:0.7rem;padding:0.5rem 0;border-bottom:1px solid rgba(39,174,96,0.1);">
+          <span style="color:var(--green);flex-shrink:0;">🟢</span>
+          <div style="font-family:'Fraunces',serif;font-size:0.8rem;color:var(--ink2);line-height:1.6;">${p.drug} + ${p.supp}: ${p.msg}</div>
+        </div>`).join('');
+      cards.innerHTML += `
+        <div style="margin-top:0.6rem;background:rgba(39,174,96,0.05);border-left:3px solid var(--green);padding:0.8rem 1rem;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.2em;color:var(--green);margin-bottom:0.5rem;">✓ 병용 가능 확인</div>
+          ${posHtml}
+        </div>`;
+    }
+  } else if (myDrugs.length > 0) {
+    cards.innerHTML += `
+      <div style="margin-top:0.6rem;padding:0.75rem 0.9rem;background:rgba(212,133,10,0.06);border-left:3px solid var(--amber);font-family:'Fraunces',serif;font-size:0.8rem;color:#854f0b;line-height:1.6;">
+        🟡 처방약을 복용 중이십니다. 새 영양제 추가 전 반드시 약-영양제 상호작용을 확인하세요.
+      </div>`;
+  }
+
+  // ── 리포트 예고 박스
+  cards.innerHTML += `
+    <div style="margin-top:1rem;background:var(--ink);padding:1.1rem 1.2rem;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.2em;color:#a8b88a;margin-bottom:0.6rem;">📝 맞춤 건강 리포트에 포함되는 내용</div>
+      <div style="display:flex;flex-direction:column;gap:0.35rem;margin-bottom:0.8rem;">
+        <div style="display:flex;align-items:center;gap:0.5rem;font-family:'Fraunces',serif;font-size:0.8rem;color:rgba(245,241,234,0.6);">
+          <span style="color:#a8b88a;font-size:0.7rem;">✓</span> 복용 중인 영양제 전체 적합성 점검
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;font-family:'Fraunces',serif;font-size:0.8rem;color:rgba(245,241,234,0.6);">
+          <span style="color:#a8b88a;font-size:0.7rem;">✓</span> 약·영양제 상호작용 상세 분석
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;font-family:'Fraunces',serif;font-size:0.8rem;color:rgba(245,241,234,0.6);">
+          <span style="color:#a8b88a;font-size:0.7rem;">✓</span> 리스크 맞춤 추가 권장 영양제 + 복용법
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;font-family:'Fraunces',serif;font-size:0.8rem;color:rgba(245,241,234,0.6);">
+          <span style="color:#a8b88a;font-size:0.7rem;">✓</span> 피해야 할 조합 명시 + 복용 시간 가이드
+        </div>
+      </div>
+      <button onclick="openReportModal()" style="width:100%;background:#a8b88a;color:var(--ink);border:none;padding:0.75rem;font-family:'Inter',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+        <span>더 자세한 내용은 맞춤 리포트로 받아보기</span><span>→</span>
+      </button>
+    </div>`;
+}
+
+/* ─── 복용 타임라인 엔진 ─── */
+const TIMELINE_DB = [
+  {
+    time: '아침 공복 (기상 후, 식사 30분 전)',
+    icon: '🌅',
+    note: '위산 영향 없이 장까지 도달 — 공복이 핵심',
+    items: [
+      { key:'유산균', name:'유산균 (프로바이오틱스)', type:'new', cond:() => true,
+        desc:'공복에 복용해야 위산 영향 없이 장까지 도달합니다. 가공식품이 잦을수록 더 중요합니다.' },
+      { key:'철분', name:'철분', type:'existing', cond:() => has('철분'),
+        desc:'공복 복용 시 흡수율이 최대 2배 높아집니다. 비타민C와 함께 드시면 더 좋습니다.' },
+    ]
+  },
+  {
+    time: '아침 식후',
+    icon: '☀️',
+    note: '지용성 비타민은 반드시 식사와 함께',
+    items: [
+      { key:'고혈압약', name:'고혈압약', type:'existing', cond:() => has('고혈압약'),
+        desc:'매일 같은 시간에 복용하세요. 빠뜨리지 않는 것이 가장 중요합니다.' },
+      { key:'당뇨약', name:'당뇨약·인슐린', type:'existing', cond:() => has('당뇨약'),
+        desc:'식사 직전 또는 식사와 함께 복용하세요. 담당 의사 지시에 따르세요.' },
+      { key:'갑상선약', name:'갑상선약', type:'caution', cond:() => has('갑상선약'),
+        desc:'⚠️ 갑상선약은 다른 영양제와 반드시 2시간 이상 간격을 두세요. 칼슘·마그네슘·철분과 특히 주의.' },
+      { key:'비타민D', name:'비타민D', type:'existing', cond:() => has('비타민D'),
+        desc:'지용성 — 식사와 함께 드셔야 흡수가 잘 됩니다. 현재 복용 시간 유지하세요.' },
+      { key:'비타민A', name:'비타민A (종합비타민 포함)', type:'existing', cond:() => has('종합비타민'),
+        desc:'지용성 비타민이 포함된 종합비타민은 식후 복용이 원칙입니다.' },
+      { key:'코엔자임Q10', name:'코엔자임 Q10', type:'new', cond:() => has('고지혈증약') || has('고혈압약'),
+        desc:'고지혈증약(스타틴) 장기 복용 시 반드시 보충하세요. 식사 중 또는 직후 복용.' },
+      { key:'비타민C', name:'비타민C', type:'existing', cond:() => has('비타민C'),
+        desc:'수용성 — 아침 식후 복용 권장. 공복 복용 시 속쓰림이 있을 수 있습니다.' },
+    ]
+  },
+  {
+    time: '점심 식후',
+    icon: '🌤️',
+    note: '',
+    items: [
+      { key:'비타민C점심', name:'비타민C (분할 복용)', type:'existing', cond:() => has('현재흡연') && has('비타민C'),
+        desc:'흡연 중이거나 스트레스가 높으면 비타민C를 아침·점심으로 나눠 드시는 것을 권장합니다.' },
+    ]
+  },
+  {
+    time: '저녁 식후',
+    icon: '🌆',
+    note: '오메가3는 저녁에 — 혈압 변화 모니터링 권장',
+    items: [
+      { key:'오메가3', name:'오메가3', type:'caution', cond:() => has('오메가3') && has('고혈압약'),
+        desc:'⚠️ 고혈압약과 병용 시 혈압이 추가로 낮아질 수 있습니다. 어지러움이 느껴지면 담당 의사와 상담하세요.' },
+      { key:'오메가3-일반', name:'오메가3', type:'existing', cond:() => has('오메가3') && !has('고혈압약'),
+        desc:'저녁 식후 복용 권장. EPA+DHA 1,000mg 이상을 목표로 하세요.' },
+      { key:'밀크시슬', name:'밀크시슬 (간 건강)', type:'existing', cond:() => has('밀크시슬'),
+        desc:'간 보호 효과. 저녁 식후 복용 시 흡수율이 좋습니다.' },
+      { key:'루테인', name:'루테인·지아잔틴', type:'existing', cond:() => has('루테인'),
+        desc:'지용성 — 저녁 식후 복용 권장. 빛 자극이 많은 하루 끝에 복용하면 효과적입니다.' },
+      { key:'아연저녁', name:'아연', type:'new', cond:() => has('만성피로') || has('수면5h미만') || has('스트레스매우높음'),
+        desc:'면역·피로 개선. 저녁 식후 복용 시 구역감이 적습니다.' },
+      { key:'칼슘저녁', name:'칼슘', type:'existing', cond:() => has('칼슘') && !has('갑상선약'),
+        desc:'저녁 식후 복용 권장. 갑상선약과는 반드시 4시간 이상 간격을 두세요.' },
+    ]
+  },
+  {
+    time: '취침 30분 전',
+    icon: '🌙',
+    note: '수면 질 개선 — 이 시간이 가장 중요합니다',
+    items: [
+      { key:'마그네슘', name:'마그네슘', type:'existing', cond:() => has('마그네슘'),
+        desc:'수면 질 나쁨 + 스트레스에 가장 효과적인 타이밍. 글리시네이트 형태를 권장합니다.' },
+      { key:'마그네슘추천', name:'마그네슘', type:'new',
+        cond:() => !has('마그네슘') && (has('수면5h미만')||has('수면질나쁨')||has('스트레스매우높음')||has('스트레스높음')),
+        desc:'수면 부족 + 스트레스에 가장 효과적인 타이밍. 글리시네이트 형태 300~400mg 권장.' },
+    ]
+  },
+];
+
+function renderTimeline(risks) {
+  const section = document.getElementById('timelineSection');
+  const blocks = document.getElementById('timelineBlocks');
+  if (!section || !blocks) return;
+
+  let totalItems = 0;
+  const blockHtml = TIMELINE_DB.map(slot => {
+    const activeItems = slot.items.filter(item => item.cond());
+    if (!activeItems.length) {
+      // 비어있는 슬롯도 표시 (점심만 예외)
+      if (slot.time.includes('점심')) return '';
+      return `<div class="tl-block">
+        <div class="tl-block-head">
+          <div class="tl-block-icon">${slot.icon}</div>
+          <div class="tl-block-info">
+            <div class="tl-block-time">${slot.time}</div>
+            ${slot.note ? `<div class="tl-block-note">${slot.note}</div>` : ''}
+          </div>
+          <div class="tl-block-count">0종</div>
+        </div>
+        <div class="tl-empty">해당 없음</div>
+      </div>`;
+    }
+    totalItems += activeItems.length;
+    const itemsHtml = activeItems.map(item => `
+      <div class="tl-item ${item.type}">
+        <div class="tl-item-dot ${item.type}"></div>
+        <div class="tl-item-body">
+          <div class="tl-item-name">
+            ${item.name}
+            <span class="tl-badge ${item.type}">${item.type==='new'?'추가 권장':item.type==='caution'?'주의 확인':'복용 중 ✓'}</span>
+          </div>
+          <div class="tl-item-desc">${item.desc}</div>
+        </div>
+      </div>`).join('');
+
+    return `<div class="tl-block">
+      <div class="tl-block-head">
+        <div class="tl-block-icon">${slot.icon}</div>
+        <div class="tl-block-info">
+          <div class="tl-block-time">${slot.time}</div>
+          ${slot.note ? `<div class="tl-block-note">${slot.note}</div>` : ''}
+        </div>
+        <div class="tl-block-count">${activeItems.length}종</div>
+      </div>
+      <div class="tl-block-items">${itemsHtml}</div>
+    </div>`;
+  }).join('');
+
+  if (totalItems === 0) { section.style.display='none'; return; }
+  section.style.display = 'block';
+  blocks.innerHTML = blockHtml;
+}
+
+/* ─── 재정 리스크 엔진 ─── */
+const FINANCE_DB = {
+  '대장암':   { cost:'3,000만~8,000만 원', period:'6개월~2년 치료·회복', sub:'수술+항암+방사선 통합 시' },
+  '위암':     { cost:'2,000만~6,000만 원', period:'6개월~1년 6개월',     sub:'조기 발견 시 상대적 낮음' },
+  '유방암':   { cost:'2,000만~5,000만 원', period:'6개월~2년',           sub:'호르몬 치료 장기화 시 추가' },
+  '폐암':     { cost:'4,000만~1억 원 이상', period:'1년~3년',            sub:'표적치료제 월 200~500만 원' },
+  '간암':     { cost:'3,000만~7,000만 원', period:'1년~2년',             sub:'이식 시 수억 원 가능' },
+  '심혈관':   { cost:'1,000만~4,000만 원', period:'3개월~1년',           sub:'스텐트·수술·재활 포함' },
+  '뇌혈관':   { cost:'2,000만~8,000만 원', period:'6개월~수년 재활',     sub:'후유 장애 시 장기 비용 추가' },
+  '대사':     { cost:'연 300만~1,000만 원', period:'지속적 관리 필요',   sub:'합병증 진행 시 급격히 증가' },
+  '수면':     { cost:'연 100만~500만 원',   period:'지속적 치료',        sub:'수면클리닉·검사 비용' },
+};
+
+const INS_ANSWERS = [null, null, null, null, null];
+
+function renderFinance(risks) {
+  const section = document.getElementById('financeSection');
+  const cards   = document.getElementById('financeCards');
+  const reality = document.getElementById('financeReality');
+
+  // 리스크 유무와 관계없이 항상 표시
+  section.style.display = 'block';
+
+  const matched = risks
+    .filter(r => r.key && FINANCE_DB[r.key])
+    .slice(0, 3);
+
+  // 치료비 환산 카드 — 리스크 있을 때만
+  if (matched.length) {
+    cards.style.display = 'flex';
+    cards.innerHTML = matched.map(r => {
+      const d = FINANCE_DB[r.key];
+      const lvColor = r.lv==='r' ? 'var(--red)' : 'var(--amber)';
+      return `<div class="finance-card">
+        <div class="fc-risk"><span style="color:${lvColor};margin-right:0.4rem;">●</span>${r.key} 리스크</div>
+        <div class="fc-cost">예상 ${d.cost}</div>
+        <div class="fc-period">⏱ ${d.period}<br/><span style="font-size:0.5rem;">${d.sub}</span></div>
+      </div>`;
+    }).join('');
+
+    const topRisk = matched[0];
+    const isRed = matched.filter(r=>r.lv==='r').length >= 1;
+    reality.style.display = 'block';
+    reality.innerHTML = isRed
+      ? `⚠️ <strong>${topRisk.key}</strong> 리스크가 현실이 된다면, 치료비만 수천만 원이 필요합니다. 치료받는 동안 일을 못하면 — 치료비와 생활비, 두 가지가 동시에 무너집니다. <strong>지금 보험 공백이 있다면, 지금이 마지막 기회일 수 있습니다.</strong>`
+      : `이 정도 리스크라면 치료비가 수백~수천만 원 발생할 수 있습니다. 당장 위급하지 않더라도, 준비되지 않은 의료비는 가계를 흔듭니다.`;
+  } else {
+    // 리스크 없을 때 — 예방 차원 메시지
+    cards.style.display = 'none';
+    reality.style.display = 'block';
+    reality.innerHTML = '✅ 현재 생활습관 리스크는 크지 않습니다. 하지만 <strong>언제 어떤 질병이 생길지 아무도 모릅니다.</strong> 지금처럼 건강할 때가 보험을 가장 유리하게 준비할 수 있는 시점입니다. 보험료가 가장 저렴하고, 가입 조건도 가장 좋습니다.';
+  }
+}
+
+/* Q1 다중선택 */
+const insQ1Selected = new Map(); // val -> level
+
+function insQ1Toggle(btn, val, level) {
+  // "없음"·"잘 모름" 단독 선택 해제
+  ['없음','잘 모름'].forEach(v => {
+    if (insQ1Selected.has(v)) {
+      insQ1Selected.delete(v);
+      document.querySelectorAll('#insQ1 .ic-opt').forEach(b => {
+        if (b.textContent.trim() === v) b.classList.remove('picked','picked-warn');
+      });
+    }
+  });
+  if (insQ1Selected.has(val)) {
+    insQ1Selected.delete(val);
+    btn.classList.remove('picked','picked-warn');
+  } else {
+    insQ1Selected.set(val, level);
+    btn.classList.add(level === 'r' ? 'picked-warn' : 'picked');
+  }
+  // INS_ANSWERS[0] 업데이트
+  if (insQ1Selected.size > 0) {
+    const levels = [...insQ1Selected.values()];
+    const worstLevel = levels.includes('r') ? 'r' : levels.includes('a') ? 'a' : 'g';
+    INS_ANSWERS[0] = { val: [...insQ1Selected.keys()].join('+'), level: worstLevel };
+  } else {
+    INS_ANSWERS[0] = null;
+  }
+  if (INS_ANSWERS.every(a => a !== null)) calcInsurance();
+}
+
+function insQ1Single(btn, val, level) {
+  // 다중선택 전부 해제
+  insQ1Selected.clear();
+  document.querySelectorAll('#insQ1 .ic-opt').forEach(b => b.classList.remove('picked','picked-warn'));
+  insQ1Selected.set(val, level);
+  btn.classList.add(level === 'r' ? 'picked-warn' : 'picked');
+  INS_ANSWERS[0] = { val, level };
+  if (INS_ANSWERS.every(a => a !== null)) calcInsurance();
+}
+
+function insClick(qIdx, optIdx, val, level) {
+  INS_ANSWERS[qIdx] = { val, level };
+
+  // 해당 질문 버튼 상태 업데이트
+  const qEl = document.getElementById('insQ' + (qIdx+1));
+  qEl.querySelectorAll('.ic-opt').forEach((btn, i) => {
+    btn.classList.remove('picked','picked-warn');
+    if (i === optIdx) {
+      btn.classList.add(level === 'r' ? 'picked-warn' : 'picked');
+    }
+  });
+
+  // 5개 모두 답변 시 결과 표시
+  if (INS_ANSWERS.every(a => a !== null)) calcInsurance();
+}
+
+function calcInsurance() {
+  const result = document.getElementById('insuranceResult');
+  const light  = document.getElementById('irLight');
+  const label  = document.getElementById('irLabel');
+  const desc   = document.getElementById('irDesc');
+  const cta    = document.getElementById('irCta');
+  const ctaText= document.getElementById('irCtaText');
+
+  const reds   = INS_ANSWERS.filter(a => a && a.level === 'r').length;
+  const ambers = INS_ANSWERS.filter(a => a && a.level === 'a').length;
+
+  // 구체적 답변 추출
+  const diagAmt        = INS_ANSWERS[1] ? INS_ANSWERS[1].val : null;
+  const lowDiagnosis   = diagAmt && ['없음','1천만원 미만','모름'].includes(diagAmt);
+  const okDiagnosis    = diagAmt && diagAmt === '3천만원 이상';
+  const silsonTime     = INS_ANSWERS[2] ? INS_ANSWERS[2].val : null;
+  const oldSilson      = silsonTime && ['2009년 이전','실손 없음'].includes(silsonTime);
+  const midSilson      = silsonTime && silsonTime === '2010~2017년';
+  const renewalTime    = INS_ANSWERS[3] ? INS_ANSWERS[3].val : null;
+  const oldRenewal     = renewalTime && renewalTime === '2009년 이전';
+  const midRenewal     = renewalTime && ['2010~2014년','2015~2019년'].includes(renewalTime);
+  const lateJoin       = oldRenewal;
+  const noIncome       = INS_ANSWERS[4] && INS_ANSWERS[4].val === '1개월도 힘듦';
+  const hasNoDiagnosis = lowDiagnosis;
+  const isOldPolicy    = oldSilson || midSilson;
+
+  result.style.display = 'block';
+
+  // 판정 — 5문항 종합
+  if (reds >= 3 || (reds >= 2 && (hasNoDiagnosis || noIncome))) {
+    light.className = 'ir-light r';
+    label.textContent = '보험 공백 심각 — 즉시 점검 필요';
+    const reasons = [];
+    if (lowDiagnosis) reasons.push(`진단자금 ${diagAmt === '모름' ? '확인 필요' : diagAmt + ' — 치료비 대비 부족'}`);
+    if (oldSilson) reasons.push(silsonTime === '실손 없음' ? '실손보험 미가입' : '2009년 이전 실손 — 비급여 보장 거의 없음');
+    if (oldRenewal) reasons.push('2009년 이전 보험 — 최신 치료·비급여 보장 미반영, 리뉴얼 검토 필요');
+    if (noIncome) reasons.push('소득 공백 시 생활비 감당 불가');
+    desc.textContent = `${reasons.join(' · ')}. 큰 질병이 왔을 때 치료비와 생활비가 동시에 무너질 수 있는 구조입니다. 지금이 점검할 마지막 기회일 수 있습니다.`;
+    cta.className = 'ir-cta ir-cta-warn';
+    ctaText.textContent = '내 보장 현황 무료 진단 신청 — 가입 강요 없음';
+  } else if (reds >= 1 || ambers >= 2 || isOldPolicy) {
+    light.className = 'ir-light a';
+    label.textContent = '일부 공백 있음 — 점검 권장';
+    const reasons = [];
+    if (midSilson) reasons.push('2010~2017년 실손 — 보장 구조 점검 권장');
+    if (lowDiagnosis && !oldSilson) reasons.push(`진단자금 ${diagAmt} — 주요 질환 치료비 대비 확인 필요`);
+    if (midRenewal) reasons.push('2010~2019년 보험 — 최신 비급여 보장 추가 여부 점검 권장');
+    desc.textContent = `${reasons.length ? reasons.join(' · ') + '. ' : ''}부분적으로 보장이 있지만 충분하지 않을 수 있습니다. 어떤 부분이 빠져 있는지 확인해보시기 바랍니다.`;
+    cta.className = 'ir-cta';
+    ctaText.textContent = '내 보장 현황 무료 진단 신청 — 가입 강요 없음';
+  } else {
+    light.className = 'ir-light g';
+    label.textContent = '기본 대비는 되어 있음';
+    desc.textContent = '현재 어느 정도 준비가 되어 있습니다. 다만 건강 리스크에 맞는 보장인지 한 번 더 정밀하게 확인해보시기를 권장합니다.';
+    cta.className = 'ir-cta';
+    ctaText.textContent = '보장 현황 정밀 확인 신청 — 무료·강요 없음';
+  }
+
+  result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function getClinical(risks) {
+  const reds = risks.filter(r=>r.lv==='r'&&r.key);
+  const ambers = risks.filter(r=>r.lv==='a'&&r.key);
+  if (reds.length>=2) return `"${reds.map(r=>r.key).join('과 ')} 리스크가 동시에 나타나는 경우를 병동에서 많이 봤습니다. 하나씩 쌓이면 결과가 달라집니다. 지금 바꿀 수 있는 가장 작은 것부터 시작하세요."`;
+  if (reds.length===1) return `"${reds[0].key} 관련 리스크 조합이 있습니다. 30년 임상에서 이 조합을 가진 분들을 많이 봤어요. 지금이 바꿀 수 있는 가장 좋은 시점입니다."`;
+  if (ambers.length>0) return `"${ambers[0].key} 관련 항목들이 주의 수준입니다. 아직 빨간불이 아니지만, 관리하지 않으면 올라갈 수 있어요. 지금이 좋은 기회입니다."`;
+  return `"전반적으로 잘 관리하고 계십니다. 정기 검진과 현재 습관 유지가 가장 중요합니다."`;
+}
+
+/* ─── 결과 표시 ─── */
+function showResult() {
+  const risks = calcRisks();
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+
+  document.getElementById('resultDate').textContent = `Life Style Check · ${dateStr}`;
+  const filledCount = TABS.filter((t,i) => {
+    if (t.isBasic) return !!(basicData.age || basicData.gender);
+    return t.fields.some(f => f.chips.some(c => ans[c.v]));
+  }).length;
+  const genderLabel = basicData.gender==='female'?'여성':basicData.gender==='male'?'남성':'';
+  const ageLabel = basicData.age ? `${basicData.age}세` : '';
+  const metaLine1 = [ageLabel, genderLabel].filter(Boolean).join(' · ') || 'Life Style Check';
+  document.getElementById('resultMeta').textContent = `${metaLine1}\n${dateStr}`;
+
+  document.getElementById('signalCards').innerHTML = risks.map(r =>
+    `<div class="sc"><div class="sc-inner">
+      <div class="sc-light ${r.lv}"></div>
+      <div class="sc-body">
+        <div class="sc-top"><span class="sc-name">${r.name}</span><span class="sc-badge ${r.lv}">${r.badge}</span></div>
+        <div class="sc-combo">${r.combo}</div>
+        <div class="sc-action">→ ${r.action}</div>
+      </div>
+    </div></div>`
+  ).join('');
+
+  document.getElementById('clinicalText').textContent = getClinical(risks);
+
+  const redKeys = risks.filter(r=>r.lv==='r'&&r.key).map(r=>r.key);
+  const optB = document.getElementById('optBDesc');
+  if (optB && redKeys.length) {
+    optB.innerHTML = `월 1회 생활습관 점검 + 보험 공백 진단.<br/><strong style="color:var(--terra)">${redKeys[0]} 리스크</strong> 맞춤 재정 대비 계획 포함 — 지속 관리형.`;
+  }
+
+  // 생활습관 액션 + 영양제 + 재정 섹션 렌더
+  renderActions();
+  renderSupps(risks);
+  renderTimeline(risks);
+  renderFinance(risks);
+  // 생활습관 기본 펼침, 영양제·타임라인 기본 닫힘
+  const ab = document.getElementById('actionBody');
+  const sa = document.getElementById('suppArrow');
+  const sb = document.getElementById('suppBody');
+  const ta = document.getElementById('timelineArrow');
+  const tb = document.getElementById('timelineBody');
+  if (ab) ab.style.display = 'block';
+  if (sb) sb.style.display = 'none';
+  if (sa) sa.style.transform = '';
+  if (tb) tb.style.display = 'none';
+  if (ta) ta.style.transform = '';
+  // 보험 답변 초기화
+  insQ1Selected.clear(); INS_ANSWERS[0]=null; INS_ANSWERS[1]=null; INS_ANSWERS[2]=null; INS_ANSWERS[3]=null; INS_ANSWERS[4]=null;
+  document.getElementById('insuranceResult').style.display='none';
+  document.querySelectorAll('.ic-opt').forEach(b=>b.classList.remove('picked','picked-warn'));
+
+  goPage('page-result');
+}
+
+/* ─── 페이지 전환 ─── */
+function goPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+}
+function goHero() { goPage('page-hero'); }
+function goLSC() { goPage('page-lsc'); updateUI(); checkAlerts(); }
+function goKakao() { window.open('http://pf.kakao.com/_hxlDTX/chat', '_blank'); }
+
+/* ─── 인트로 카드뉴스 ─── */
+const TOTAL_CARDS = 7;
+let introCur = 0;
+
+function introInit() {
+  const dots = document.getElementById('introDots');
+  if (!dots) return;
+  dots.innerHTML = Array.from({length: TOTAL_CARDS}, (_,i) =>
+    `<div class="i-dot${i===0?' on':''}" id="idot${i}" onclick="introGoTo(${i})"></div>`
+  ).join('');
+}
+
+function introMove(dir) {
+  const next = introCur + dir;
+  if (next < 0 || next >= TOTAL_CARDS) return;
+  introGoTo(next);
+}
+
+function introGoTo(idx) {
+  const curCard = document.getElementById('ic'+introCur);
+  if (curCard) {
+    curCard.classList.add('exit');
+    setTimeout(() => { curCard.classList.remove('active','exit'); }, 350);
+  }
+  for (let i=0; i<TOTAL_CARDS; i++) {
+    const d = document.getElementById('idot'+i);
+    if (!d) continue;
+    d.className = 'i-dot' + (i < idx ? ' done' : i === idx ? ' on' : '');
+  }
+  introCur = idx;
+  setTimeout(() => {
+    const newCard = document.getElementById('ic'+introCur);
+    if (newCard) newCard.classList.add('active');
+  }, 60);
+  const prev = document.getElementById('iArrPrev');
+  const next2 = document.getElementById('iArrNext');
+  if (prev) prev.disabled = introCur === 0;
+  if (next2) {
+    if (introCur === TOTAL_CARDS - 1) {
+      next2.textContent = '시작 →';
+      next2.onclick = goLSC;
+    } else {
+      next2.textContent = '→';
+      next2.onclick = () => introMove(1);
+    }
+  }
+}
+
+/* ─── 리포트 신청 ─── */
+function buildReportData() {
+  const risks = calcRisks();
+  const riskSummary = risks.map(r => {
+    const dot = r.lv==='r'?'🔴':r.lv==='a'?'🟡':'🟢';
+    return `${dot} ${r.name}: ${r.combo}`;
+  }).join('\n');
+
+  const actionItems = (() => {
+    const scored = ACTION_MAP.filter(a=>a.cond()).map(a=>({...a.data,score:a.score()})).sort((a,b)=>b.score-a.score).slice(0,3);
+    return scored.map((a,i)=>`${i+1}순위: ${a.title} (현재: ${a.curr} → 목표: ${a.goal})`).join('\n');
+  })();
+
+  const suppItems = (() => {
+    const matched = SUPP_DB.filter(s=>s.cond()).map(s=>({...s,p:s.priority()})).sort((a,b)=>b.p-a.p).slice(0,3);
+    return matched.map((s,i)=>`${i+1}순위: ${s.name} — ${s.why} (${s.timing})`).join('\n');
+  })();
+
+  const insAnswerText = INS_ANSWERS.map((a,i)=>a?`Q${i+1}: ${a.val}`:'').filter(Boolean).join(' / ');
+
+  return {
+    age: basicData.age || '미입력',
+    gender: basicData.gender==='female'?'여성':basicData.gender==='male'?'남성':'미입력',
+    bmi: basicData.height&&basicData.weight ? (basicData.weight/((basicData.height/100)**2)).toFixed(1) : '미입력',
+    risk_summary: riskSummary || '없음',
+    action_items: actionItems || '없음',
+    supp_items: suppItems || '없음',
+    insurance_answers: insAnswerText || '미체크',
+    date: new Date().toLocaleDateString('ko-KR'),
+  };
+}
+
+function openReportModal() {
+  const risks = calcRisks();
+  const previewEl = document.getElementById('rmPreviewItems');
+
+  // 미리보기 생성
+  const lines = [];
+  const topRisks = risks.filter(r=>r.key).slice(0,3);
+  if (topRisks.length) {
+    const dots = topRisks.map(r=>`<span class="dot-${r.lv}">●</span>${r.key} 리스크`).join(', ');
+    lines.push(`<div class="rm-preview-item">· 주요 리스크: ${dots}</div>`);
+  }
+  if (basicData.age||basicData.gender) {
+    const g = basicData.gender==='female'?'여성':basicData.gender==='male'?'남성':'';
+    lines.push(`<div class="rm-preview-item">· 기본정보: ${[basicData.age?basicData.age+'세':'',g].filter(Boolean).join(' ')}</div>`);
+  }
+  lines.push('<div class="rm-preview-item">· 생활습관 우선순위 3가지 + 실천 방법</div>');
+  lines.push('<div class="rm-preview-item">· 리스크 맞춤 영양제 가이드 + 복용법</div>');
+  lines.push('<div class="rm-preview-item">· 보험 공백 분석 + 코멘트</div>');
+  previewEl.innerHTML = lines.join('');
+
+  // 폼 초기화
+  document.getElementById('rmForm').style.display='block';
+  document.getElementById('rmSuccess').style.display='none';
+  document.getElementById('rmEmail').value='';
+  document.getElementById('rmName').value='';
+  document.getElementById('rmSubmitBtn').disabled=false;
+  document.getElementById('rmSubmitBtn').innerHTML='<span>리포트 신청하기</span><span>→</span>';
+
+  document.getElementById('modal-report').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeReportModal(ev) {
+  if(ev && ev.target !== document.getElementById('modal-report')) return;
+  document.getElementById('modal-report').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+async function submitReport() {
+  const email = document.getElementById('rmEmail').value.trim();
+  const name  = document.getElementById('rmName').value.trim() || '고객';
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('rmEmail').style.borderColor='var(--red)';
+    document.getElementById('rmEmail').focus();
+    return;
+  }
+  document.getElementById('rmEmail').style.borderColor='';
+
+  const btn = document.getElementById('rmSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span>전송 중...</span>';
+
+  const data = buildReportData();
+
+  // ── Formspree: 선생님 수신 (관리자용)
+  try {
+    await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: `[CareLab 리포트 신청] ${data.age} ${data.gender} · ${email}`,
+        신청자이메일: email,
+        신청자이름: name,
+        나이성별: `${data.age} / ${data.gender}`,
+        BMI: data.bmi,
+        리스크요약: data.risk_summary,
+        생활습관우선순위: data.action_items,
+        영양제가이드: data.supp_items,
+        보험체크: data.insurance_answers,
+        신청일: data.date,
+      })
+    });
+  } catch(e) { console.warn('Formspree 전송 실패 (ID 미설정):', e); }
+
+  // ── EmailJS: 사용자 자동 확인 메일
+  try {
+    if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_USER, {
+        to_email: email,
+        to_name: name,
+        age_gender: `${data.age} ${data.gender}`,
+        risk_summary: data.risk_summary,
+        action_items: data.action_items,
+        supp_items: data.supp_items,
+        insurance: data.insurance_answers,
+        date: data.date,
+      });
+    }
+  } catch(e) { console.warn('EmailJS 전송 실패 (ID 미설정):', e); }
+
+  // ── 완료 화면 표시 (ID 미설정이어도 UX는 완료로)
+  document.getElementById('rmForm').style.display='none';
+  document.getElementById('rmSuccess').style.display='block';
+  document.body.style.overflow='';
+}
+
+/* ─── 섹션 접이식 ─── */
+function toggleSection(bodyId, arrowId) {
+  const body = document.getElementById(bodyId);
+  const arrow = document.getElementById(arrowId);
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+  // 열릴 때 해당 섹션으로 부드럽게 스크롤
+  if (!isOpen) {
+    setTimeout(() => {
+      body.parentElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
+  }
+}
+
+/* ─── 모달 ─── */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id, ev) {
+  if (ev && ev.target !== document.getElementById(id)) return;
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => {
+      m.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  }
+});
+
+function restart() {
+  for(const k in ans) delete ans[k];
+  for(const k in basicData) basicData[k]='';
+  for(const k in etcAnswers) delete etcAnswers[k];
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel','sel-g'));
+  // 모든 pane active 제거
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  // 모든 탭 버튼 초기화
+  TABS.forEach((_,i)=>{
+    const btn=document.getElementById(`tb${i}`);
+    if(btn) btn.className='tm-tab';
+  });
+  cur=0;
+  goPage('page-lsc');
+  // pane-0 활성화 후 UI 업데이트
+  document.getElementById('pane-0').classList.add('active');
+  document.getElementById('tb0').classList.add('active');
+  updateUI();
+  updateProgress();
+}
+
+init();
+introInit();
+</script>
+</body>
+</html>
